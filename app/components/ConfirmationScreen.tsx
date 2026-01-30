@@ -134,7 +134,7 @@ export default function ConfirmationScreen({
       <div className="grain-overlay"></div>
 
       {/* Main Content */}
-      <div className="z-10 w-full max-w-lg px-6 py-8 overflow-y-auto max-h-screen">
+      <div className="z-10 w-full max-w-3xl px-6 py-8">
         {/* Progress Indicator */}
         <div className="fade-in-1 text-center mb-6">
           <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground font-modern">
@@ -156,127 +156,140 @@ export default function ConfirmationScreen({
           </CardHeader>
 
           <CardContent className="space-y-5">
-            {/* Profile Data Section */}
-            <div className="fade-in-3 section-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-800 font-modern flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  Profile Data
-                </h4>
-                <button 
-                  onClick={onEditProfile}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-modern"
-                >
-                  Edit
-                </button>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-xs text-muted-foreground font-modern">Name</span>
-                  <span className="text-sm font-medium text-gray-700 font-modern">
-                    {profileData?.name || "Not provided"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-xs text-muted-foreground font-modern">Headline</span>
-                  <span className="text-sm font-medium text-gray-700 font-modern max-w-[200px] text-right truncate">
-                    {profileData?.headline || "Not provided"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-xs text-muted-foreground font-modern">LinkedIn PDF</span>
-                  <span className="text-sm font-medium text-green-600 font-modern flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
+            {/* Two column layout */}
+            <div className="grid md:grid-cols-2 gap-5">
+              {/* Left Column - Profile Data */}
+              <div className="fade-in-3 section-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-800 font-modern flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
                     </svg>
-                    {profileData?.pdfFileName || "Uploaded"}
-                  </span>
+                    Profile Data
+                  </h4>
+                  <button 
+                    onClick={onEditProfile}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-modern"
+                  >
+                    Edit
+                  </button>
                 </div>
-                {profileData?.linkedinUrl && (
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-xs text-muted-foreground font-modern">Profile URL</span>
-                    <span className="text-sm text-blue-600 font-modern truncate max-w-[180px]">
-                      {profileData.linkedinUrl}
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-xs text-muted-foreground font-modern">Name</span>
+                    <span className="text-sm font-medium text-gray-700 font-modern">
+                      {profileData?.name || "Not provided"}
                     </span>
                   </div>
-                )}
-              </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-xs text-muted-foreground font-modern">Headline</span>
+                    <span className="text-sm font-medium text-gray-700 font-modern max-w-[160px] text-right truncate">
+                      {profileData?.headline || "Not provided"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-xs text-muted-foreground font-modern">LinkedIn PDF</span>
+                    <span className="text-sm font-medium text-green-600 font-modern flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      {profileData?.pdfFileName ? "Uploaded" : "Uploaded"}
+                    </span>
+                  </div>
+                  {profileData?.linkedinUrl && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-xs text-muted-foreground font-modern">Profile URL</span>
+                      <span className="text-sm text-blue-600 font-modern truncate max-w-[140px]">
+                        {profileData.linkedinUrl}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-              {/* What we'll extract */}
-              <div className="bg-gray-50 rounded-lg p-3 mt-3">
-                <p className="text-xs font-medium text-gray-700 font-modern mb-2">From your PDF, we'll extract:</p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="font-modern text-xs">Experience</Badge>
-                  <Badge variant="secondary" className="font-modern text-xs">Skills</Badge>
-                  <Badge variant="secondary" className="font-modern text-xs">Education</Badge>
-                  <Badge variant="secondary" className="font-modern text-xs">Profile narrative</Badge>
+                {/* What we'll extract */}
+                <div className="bg-gray-50 rounded-lg p-3 mt-3">
+                  <p className="text-xs font-medium text-gray-700 font-modern mb-2">From your PDF, we'll extract:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge variant="secondary" className="font-modern text-xs">Experience</Badge>
+                    <Badge variant="secondary" className="font-modern text-xs">Skills</Badge>
+                    <Badge variant="secondary" className="font-modern text-xs">Education</Badge>
+                    <Badge variant="secondary" className="font-modern text-xs">Narrative</Badge>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Posts Section */}
-            <div className="fade-in-4 section-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-800 font-modern flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                  </svg>
-                  Content & Posts
-                </h4>
-                <button 
-                  onClick={onEditPosts}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-modern"
-                >
-                  Edit
-                </button>
-              </div>
+              {/* Right Column - Posts Section */}
+              <div className="fade-in-4 section-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-800 font-modern flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Content & Posts
+                  </h4>
+                  <button 
+                    onClick={onEditPosts}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-modern"
+                  >
+                    Edit
+                  </button>
+                </div>
 
-              {posts.length > 0 ? (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Badge variant="secondary" className="font-modern">
-                      {posts.length} {posts.length === 1 ? "post" : "posts"} shared
-                    </Badge>
-                    {featuredPosts.length > 0 && (
-                      <Badge variant="secondary" className="font-modern text-amber-700 bg-amber-100">
-                        {featuredPosts.length} featured
+                {posts.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Badge variant="secondary" className="font-modern">
+                        {posts.length} {posts.length === 1 ? "post" : "posts"} shared
                       </Badge>
-                    )}
+                      {featuredPosts.length > 0 && (
+                        <Badge variant="secondary" className="font-modern text-amber-700 bg-amber-100">
+                          {featuredPosts.length} featured
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {/* Preview of posts */}
+                    <div className="space-y-2 max-h-[140px] overflow-y-auto">
+                      {posts.slice(0, 4).map((post, index) => (
+                        <div key={index} className={`text-xs p-2 rounded ${post.isFeatured ? "bg-amber-50" : "bg-gray-50"}`}>
+                          <p className="text-gray-600 font-modern line-clamp-1">{post.content}</p>
+                        </div>
+                      ))}
+                      {posts.length > 4 && (
+                        <p className="text-xs text-muted-foreground font-modern">
+                          + {posts.length - 4} more posts
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* Preview of posts */}
-                  <div className="space-y-2 max-h-[120px] overflow-y-auto">
-                    {posts.slice(0, 3).map((post, index) => (
-                      <div key={index} className={`text-xs p-2 rounded ${post.isFeatured ? "bg-amber-50" : "bg-gray-50"}`}>
-                        <p className="text-gray-600 font-modern line-clamp-1">{post.content}</p>
-                      </div>
-                    ))}
-                    {posts.length > 3 && (
-                      <p className="text-xs text-muted-foreground font-modern">
-                        + {posts.length - 3} more posts
-                      </p>
-                    )}
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-muted-foreground font-modern">No posts shared yet</p>
+                    <p className="text-xs text-muted-foreground font-modern mt-1">
+                      You can add posts later to improve recommendations
+                    </p>
+                  </div>
+                )}
+
+                {/* What happens next - now in right column */}
+                <div className="bg-gray-50 rounded-lg p-3 mt-auto">
+                  <p className="text-xs font-medium text-gray-700 font-modern mb-1.5">What we'll analyze:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge variant="secondary" className="font-modern text-xs">Content themes</Badge>
+                    <Badge variant="secondary" className="font-modern text-xs">Voice & tone</Badge>
+                    <Badge variant="secondary" className="font-modern text-xs">Engagement</Badge>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-sm text-muted-foreground font-modern">No posts shared yet</p>
-                  <p className="text-xs text-muted-foreground font-modern mt-1">
-                    You can add posts later to improve recommendations
-                  </p>
-                </div>
-              )}
+              </div>
             </div>
 
-            {/* Confirmation checkbox */}
+            {/* Confirmation checkbox - full width */}
             <div className="fade-in-5 bg-green-50/80 border border-green-200 rounded-lg p-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -296,27 +309,8 @@ export default function ConfirmationScreen({
               </label>
             </div>
 
-            {/* What happens next */}
-            <div className="fade-in-5 space-y-2">
-              <p className="text-xs font-medium text-gray-700 font-modern">What happens next?</p>
-              <ul className="text-xs text-gray-600 font-modern space-y-1.5">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-0.5">→</span>
-                  We'll analyze your profile structure and positioning
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-0.5">→</span>
-                  We'll identify your content themes and voice
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-0.5">→</span>
-                  We'll surface insights and niche opportunities
-                </li>
-              </ul>
-            </div>
-
             {/* Action Buttons */}
-            <div className="fade-in-6 flex gap-3 pt-4">
+            <div className="fade-in-6 flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="ghost"

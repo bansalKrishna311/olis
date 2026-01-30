@@ -147,7 +147,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
       <div className="grain-overlay"></div>
 
       {/* Main Content */}
-      <div className="z-10 w-full max-w-lg px-6 py-8 overflow-y-auto max-h-screen">
+      <div className="z-10 w-full max-w-3xl px-6 py-8">
         {/* Progress Indicator */}
         <div className="fade-in-1 text-center mb-6">
           <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground font-modern">
@@ -156,7 +156,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
         </div>
 
         <Card className="fade-in-2 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-2">
+          <CardHeader className="text-center pb-4">
             <CardDescription className="text-xs uppercase tracking-widest font-modern">
               Your content history
             </CardDescription>
@@ -167,155 +167,163 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Purpose explanation */}
-              <div className="fade-in-3 bg-blue-50/80 border border-blue-100 rounded-lg p-4 space-y-2">
-                <p className="text-xs font-medium text-blue-800 font-modern">
-                  Why share your posts?
-                </p>
-                <p className="text-xs text-blue-700 font-modern">
-                  This helps us understand your current voice, content themes, and engagement style. 
-                  We'll identify gaps between your profile positioning and what you actually post.
-                </p>
-              </div>
+              {/* Two column layout */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Left Column - Post Input */}
+                <div className="space-y-4">
+                  {/* Purpose explanation */}
+                  <div className="fade-in-3 bg-blue-50/80 border border-blue-100 rounded-lg p-3 space-y-1">
+                    <p className="text-xs font-medium text-blue-800 font-modern">
+                      Why share your posts?
+                    </p>
+                    <p className="text-xs text-blue-700 font-modern">
+                      This helps us understand your voice, content themes, and engagement style.
+                    </p>
+                  </div>
 
-              {/* Recommendation */}
-              <div className="fade-in-3 flex items-start gap-3 text-sm text-gray-600 font-modern">
-                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">💡</span>
+                  {/* Textarea for pasting posts */}
+                  <div className="fade-in-3 space-y-3">
+                    <Label htmlFor="post" className="font-modern text-sm">
+                      Paste a LinkedIn post
+                    </Label>
+                    <Textarea
+                      id="post"
+                      value={currentPost}
+                      onChange={(e) => setCurrentPost(e.target.value)}
+                      placeholder="Copy and paste the content of one of your LinkedIn posts here..."
+                      className="min-h-[140px] font-modern resize-none"
+                    />
+                    
+                    {/* Featured toggle */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isFeatured}
+                        onChange={(e) => setIsFeatured(e.target.checked)}
+                        className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                      />
+                      <span className="text-sm text-gray-600 font-modern">
+                        Mark as featured post
+                      </span>
+                    </label>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleAddPost}
+                      disabled={!currentPost.trim()}
+                      className="w-full font-modern"
+                    >
+                      + Add this post
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-gray-700">We recommend sharing 5+ posts</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    The more posts you share, the better we can understand your style. But even a few is a great start.
-                  </p>
-                </div>
-              </div>
 
-              {/* Textarea for pasting posts */}
-              <div className="fade-in-3 space-y-3">
-                <Label htmlFor="post" className="font-modern text-sm">
-                  Paste a LinkedIn post
-                </Label>
-                <Textarea
-                  id="post"
-                  value={currentPost}
-                  onChange={(e) => setCurrentPost(e.target.value)}
-                  placeholder="Copy and paste the content of one of your LinkedIn posts here..."
-                  className="min-h-[120px] font-modern resize-none"
-                />
-                
-                {/* Featured toggle */}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isFeatured}
-                    onChange={(e) => setIsFeatured(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
-                  />
-                  <span className="text-sm text-gray-600 font-modern">
-                    Mark as featured post
-                  </span>
-                  <span className="text-xs text-muted-foreground font-modern">
-                    (posts you've pinned on your profile)
-                  </span>
-                </label>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleAddPost}
-                  disabled={!currentPost.trim()}
-                  className="w-full font-modern"
-                >
-                  + Add this post
-                </Button>
-              </div>
-
-              {/* Added Posts */}
-              {posts.length > 0 && (
-                <div className="fade-in-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-modern text-sm">Added posts</Label>
-                    <div className="flex gap-2">
-                      {featuredCount > 0 && (
-                        <Badge variant="secondary" className="font-modern text-amber-700 bg-amber-100">
-                          {featuredCount} featured
-                        </Badge>
-                      )}
-                      <Badge variant="secondary" className="font-modern">
-                        {posts.length} total
-                      </Badge>
+                {/* Right Column - Added Posts */}
+                <div className="space-y-4">
+                  {/* Recommendation */}
+                  <div className="fade-in-3 flex items-start gap-3 text-sm text-gray-600 font-modern bg-amber-50/50 rounded-lg p-3">
+                    <span className="text-lg">💡</span>
+                    <div>
+                      <p className="font-medium text-gray-700 text-sm">We recommend 5+ posts</p>
+                      <p className="text-xs text-muted-foreground">
+                        Even a few is a great start.
+                      </p>
                     </div>
                   </div>
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
-                    {posts.map((post, index) => (
-                      <div
-                        key={index}
-                        className={`post-item rounded-lg p-3 relative group ${
-                          post.isFeatured ? "bg-amber-50 border border-amber-200" : "bg-gray-50"
+
+                  {/* Progress indicator for posts */}
+                  <div className="fade-in-4 space-y-2">
+                    <div className="flex justify-between text-xs font-modern">
+                      <span className="text-muted-foreground">Posts added</span>
+                      <span className={posts.length >= 5 ? "text-green-600" : "text-gray-600"}>
+                        {posts.length} / 5 recommended
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-300 rounded-full ${
+                          posts.length >= 5 ? "bg-green-500" : "bg-blue-400"
                         }`}
-                      >
-                        {post.isFeatured && (
-                          <span className="text-[10px] uppercase tracking-wider text-amber-600 font-medium font-modern">
-                            Featured
-                          </span>
-                        )}
-                        <p className="text-sm text-gray-600 font-modern line-clamp-2 pr-16">
-                          {post.content}
-                        </p>
-                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleFeatured(index)}
-                            className={`p-1 rounded ${post.isFeatured ? "text-amber-500" : "text-gray-400 hover:text-amber-500"}`}
-                            title={post.isFeatured ? "Remove from featured" : "Mark as featured"}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={post.isFeatured ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemovePost(index)}
-                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <line x1="18" y1="6" x2="6" y2="18"></line>
-                              <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                          </button>
+                        style={{ width: `${Math.min((posts.length / 5) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Added Posts */}
+                  {posts.length > 0 ? (
+                    <div className="fade-in-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="font-modern text-sm">Added posts</Label>
+                        <div className="flex gap-2">
+                          {featuredCount > 0 && (
+                            <Badge variant="secondary" className="font-modern text-amber-700 bg-amber-100">
+                              {featuredCount} featured
+                            </Badge>
+                          )}
+                          <Badge variant="secondary" className="font-modern">
+                            {posts.length} total
+                          </Badge>
                         </div>
                       </div>
-                    ))}
+                      <div className="space-y-2 max-h-[180px] overflow-y-auto pr-2">
+                        {posts.map((post, index) => (
+                          <div
+                            key={index}
+                            className={`post-item rounded-lg p-3 relative group ${
+                              post.isFeatured ? "bg-amber-50 border border-amber-200" : "bg-gray-50"
+                            }`}
+                          >
+                            {post.isFeatured && (
+                              <span className="text-[10px] uppercase tracking-wider text-amber-600 font-medium font-modern">
+                                Featured
+                              </span>
+                            )}
+                            <p className="text-sm text-gray-600 font-modern line-clamp-2 pr-12">
+                              {post.content}
+                            </p>
+                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleFeatured(index)}
+                                className={`p-1 rounded ${post.isFeatured ? "text-amber-500" : "text-gray-400 hover:text-amber-500"}`}
+                                title={post.isFeatured ? "Remove from featured" : "Mark as featured"}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={post.isFeatured ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePost(index)}
+                                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="fade-in-3 border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                      <p className="text-sm text-muted-foreground font-modern">No posts added yet</p>
+                      <p className="text-xs text-muted-foreground font-modern mt-1">Paste your first post on the left</p>
+                    </div>
+                  )}
+
+                  {/* Safety Message */}
+                  <div className="fade-in-4 flex items-start gap-2 text-xs text-muted-foreground font-modern">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Posts are only used to understand your style. Never shared externally.</span>
                   </div>
                 </div>
-              )}
-
-              {/* Progress indicator for posts */}
-              <div className="fade-in-4 space-y-2">
-                <div className="flex justify-between text-xs font-modern">
-                  <span className="text-muted-foreground">Posts added</span>
-                  <span className={posts.length >= 5 ? "text-green-600" : "text-gray-600"}>
-                    {posts.length} / 5 recommended
-                  </span>
-                </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full transition-all duration-300 rounded-full ${
-                      posts.length >= 5 ? "bg-green-500" : "bg-blue-400"
-                    }`}
-                    style={{ width: `${Math.min((posts.length / 5) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Safety Message */}
-              <div className="fade-in-4 flex items-start gap-2 text-xs text-muted-foreground font-modern">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <span>Your posts are only used to understand your content style. We never share, store, or publish them externally.</span>
               </div>
 
               {/* Action Buttons */}

@@ -186,7 +186,7 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
       <div className="grain-overlay"></div>
 
       {/* Main Content */}
-      <div className="z-10 w-full max-w-lg px-6 py-8">
+      <div className="z-10 w-full max-w-3xl px-6 py-8">
         {/* Progress Indicator */}
         <div className="fade-in-1 text-center mb-6">
           <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground font-modern">
@@ -195,7 +195,7 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
         </div>
 
         <Card className="fade-in-2 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-2">
+          <CardHeader className="text-center pb-4">
             <CardDescription className="text-xs uppercase tracking-widest font-modern">
               Let's get started
             </CardDescription>
@@ -205,176 +205,181 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* PDF Upload Zone - Primary */}
-              <div className="fade-in-3 space-y-3">
-                <Label className="font-modern text-sm flex items-center gap-2">
-                  LinkedIn Profile PDF
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Required</span>
-                </Label>
-                
-                <div
-                  className={`upload-zone rounded-lg p-6 text-center cursor-pointer ${
-                    isDragging ? "dragging" : ""
-                  } ${formData.pdfFile ? "has-file" : ""}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Two column layout */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Left Column - PDF Upload */}
+                <div className="fade-in-3 space-y-4">
+                  <Label className="font-modern text-sm flex items-center gap-2">
+                    LinkedIn Profile PDF
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Required</span>
+                  </Label>
                   
-                  {formData.pdfFile ? (
-                    <div className="space-y-2">
-                      <div className="w-12 h-12 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <div
+                    className={`upload-zone rounded-lg p-8 text-center cursor-pointer h-48 flex items-center justify-center ${
+                      isDragging ? "dragging" : ""
+                    } ${formData.pdfFile ? "has-file" : ""}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    
+                    {formData.pdfFile ? (
+                      <div className="space-y-2">
+                        <div className="w-12 h-12 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
+                        <p className="text-sm font-medium text-gray-700 font-modern">{formData.pdfFileName}</p>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleRemovePdf(); }}
+                          className="text-xs text-red-500 hover:text-red-600 font-modern"
+                        >
+                          Remove file
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 font-modern">
+                            Drop your LinkedIn PDF here
+                          </p>
+                          <p className="text-xs text-muted-foreground font-modern mt-1">
+                            or click to browse
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Why PDF explanation */}
+                  <div className="bg-blue-50/80 border border-blue-100 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-medium text-blue-800 font-modern">
+                      Why do we need your LinkedIn PDF?
+                    </p>
+                    <ul className="text-xs text-blue-700 font-modern space-y-1">
+                      <li className="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
                           <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                      </div>
-                      <p className="text-sm font-medium text-gray-700 font-modern">{formData.pdfFileName}</p>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleRemovePdf(); }}
-                        className="text-xs text-red-500 hover:text-red-600 font-modern"
-                      >
-                        Remove and upload a different file
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                          <polyline points="17 8 12 3 7 8"></polyline>
-                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        <span><strong>Accuracy:</strong> Real experience, skills & education</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
+                          <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 font-modern">
-                          Drop your LinkedIn PDF here
-                        </p>
-                        <p className="text-xs text-muted-foreground font-modern mt-1">
-                          or click to browse
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Why PDF explanation */}
-                <div className="bg-blue-50/80 border border-blue-100 rounded-lg p-4 space-y-2">
-                  <p className="text-xs font-medium text-blue-800 font-modern">
-                    Why do we need your LinkedIn PDF?
-                  </p>
-                  <ul className="text-xs text-blue-700 font-modern space-y-1.5">
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span><strong>Accuracy:</strong> We get your real experience, skills & education</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span><strong>No scraping:</strong> You provide the data yourself, with full consent</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span><strong>Privacy first:</strong> Nothing is posted or accessed on your behalf</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* How to get PDF */}
-                <details className="text-xs text-muted-foreground font-modern">
-                  <summary className="cursor-pointer hover:text-gray-700">
-                    How do I get my LinkedIn PDF?
-                  </summary>
-                  <div className="mt-2 pl-4 border-l-2 border-gray-200 space-y-1">
-                    <p>1. Go to your LinkedIn profile</p>
-                    <p>2. Click the "More" button below your photo</p>
-                    <p>3. Select "Save to PDF"</p>
-                    <p>4. Upload the downloaded file here</p>
+                        <span><strong>No scraping:</strong> You provide data with consent</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span><strong>Privacy first:</strong> Nothing posted on your behalf</span>
+                      </li>
+                    </ul>
                   </div>
-                </details>
+
+                  {/* How to get PDF */}
+                  <details className="text-xs text-muted-foreground font-modern">
+                    <summary className="cursor-pointer hover:text-gray-700">
+                      How do I get my LinkedIn PDF?
+                    </summary>
+                    <div className="mt-2 pl-4 border-l-2 border-gray-200 space-y-1">
+                      <p>1. Go to your LinkedIn profile</p>
+                      <p>2. Click "More" button below your photo</p>
+                      <p>3. Select "Save to PDF"</p>
+                      <p>4. Upload the file here</p>
+                    </div>
+                  </details>
+                </div>
+
+                {/* Right Column - Form Fields */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex-1 h-px bg-gray-200 md:hidden"></div>
+                    <span className="text-xs text-muted-foreground font-modern">Confirm your identity</span>
+                    <div className="flex-1 h-px bg-gray-200 md:hidden"></div>
+                  </div>
+
+                  {/* Name Field */}
+                  <div className="fade-in-4 space-y-2">
+                    <Label htmlFor="name" className="font-modern text-sm">
+                      Full name
+                    </Label>
+                    <Input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Priya Sharma"
+                      className="h-11 font-modern"
+                    />
+                  </div>
+
+                  {/* Headline Field */}
+                  <div className="fade-in-4 space-y-2">
+                    <Label htmlFor="headline" className="font-modern text-sm">
+                      Current headline or role
+                    </Label>
+                    <Input
+                      type="text"
+                      id="headline"
+                      name="headline"
+                      value={formData.headline}
+                      onChange={handleChange}
+                      placeholder="e.g. Product Designer at Figma"
+                      className="h-11 font-modern"
+                    />
+                  </div>
+
+                  {/* LinkedIn URL Field */}
+                  <div className="fade-in-4 space-y-2">
+                    <Label htmlFor="linkedinUrl" className="font-modern text-sm">
+                      LinkedIn profile URL
+                      <span className="text-xs text-muted-foreground ml-2">(optional)</span>
+                    </Label>
+                    <Input
+                      type="url"
+                      id="linkedinUrl"
+                      name="linkedinUrl"
+                      value={formData.linkedinUrl}
+                      onChange={handleChange}
+                      placeholder="https://linkedin.com/in/your-profile"
+                      className="h-11 font-modern"
+                    />
+                  </div>
+
+                  {/* What happens next */}
+                  <div className="fade-in-5 bg-gray-50 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-700 font-modern">What happens next?</p>
+                    <ul className="text-xs text-gray-600 font-modern space-y-1">
+                      <li>• We'll extract your experience, skills, and profile structure</li>
+                      <li>• You'll review everything before we proceed</li>
+                      <li>• Nothing shared without your approval</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
-              {/* Divider */}
-              <div className="fade-in-3 flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-200"></div>
-                <span className="text-xs text-muted-foreground font-modern">Confirm your identity</span>
-                <div className="flex-1 h-px bg-gray-200"></div>
-              </div>
-
-              {/* Name Field */}
-              <div className="fade-in-4 space-y-2">
-                <Label htmlFor="name" className="font-modern text-sm">
-                  Full name
-                </Label>
-                <Input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="e.g. Priya Sharma"
-                  className="h-11 font-modern"
-                />
-              </div>
-
-              {/* Headline Field */}
-              <div className="fade-in-4 space-y-2">
-                <Label htmlFor="headline" className="font-modern text-sm">
-                  Current headline or role
-                </Label>
-                <Input
-                  type="text"
-                  id="headline"
-                  name="headline"
-                  value={formData.headline}
-                  onChange={handleChange}
-                  placeholder="e.g. Product Designer at Figma"
-                  className="h-11 font-modern"
-                />
-              </div>
-
-              {/* LinkedIn URL Field */}
-              <div className="fade-in-4 space-y-2">
-                <Label htmlFor="linkedinUrl" className="font-modern text-sm">
-                  LinkedIn profile URL
-                  <span className="text-xs text-muted-foreground ml-2">(optional, for reference)</span>
-                </Label>
-                <Input
-                  type="url"
-                  id="linkedinUrl"
-                  name="linkedinUrl"
-                  value={formData.linkedinUrl}
-                  onChange={handleChange}
-                  placeholder="https://linkedin.com/in/your-profile"
-                  className="h-11 font-modern"
-                />
-              </div>
-
-              {/* What happens next */}
-              <div className="fade-in-5 bg-gray-50 rounded-lg p-4 space-y-2">
-                <p className="text-xs font-medium text-gray-700 font-modern">What happens next?</p>
-                <ul className="text-xs text-gray-600 font-modern space-y-1">
-                  <li>• We'll extract your experience, skills, and profile structure</li>
-                  <li>• You'll be able to review everything before we proceed</li>
-                  <li>• Nothing is shared or posted without your explicit approval</li>
-                </ul>
-              </div>
-
-              {/* Submit Button */}
+              {/* Submit Button - Full Width */}
               <div className="fade-in-5 pt-2">
                 <Button
                   type="submit"
