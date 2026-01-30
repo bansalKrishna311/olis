@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Lock,
-  Sparkles
+  Sparkles,
+  Mic
 } from "lucide-react";
 
 const navItems = [
@@ -26,6 +27,12 @@ const navItems = [
     label: "Profile Refactor", 
     href: "/dashboard/refactor", 
     icon: Sparkles,
+    locked: false 
+  },
+  { 
+    label: "Voice & Intent", 
+    href: "/dashboard/voice", 
+    icon: Mic,
     locked: false 
   },
   { 
