@@ -2,22 +2,16 @@
 
 import { useState } from "react";
 import WelcomeAnimation from "./components/WelcomeAnimation";
-import ProfileSetup from "./components/ProfileSetup";
-import PostHistorySetup from "./components/PostHistorySetup";
+import ProfileSetup, { type ProfileData } from "./components/ProfileSetup";
+import PostHistorySetup, { type PostData } from "./components/PostHistorySetup";
 import ConfirmationScreen from "./components/ConfirmationScreen";
 
 type AppStep = "welcome" | "profile-setup" | "post-history" | "confirmation" | "main";
 
-interface ProfileData {
-  name: string;
-  headline: string;
-  linkedinUrl: string;
-}
-
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<AppStep>("welcome");
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [posts, setPosts] = useState<string[]>([]);
+  const [posts, setPosts] = useState<PostData[]>([]);
 
   const handleAnimationComplete = () => {
     setCurrentStep("profile-setup");
@@ -28,7 +22,7 @@ export default function Home() {
     setCurrentStep("post-history");
   };
 
-  const handlePostHistoryComplete = (submittedPosts: string[]) => {
+  const handlePostHistoryComplete = (submittedPosts: PostData[]) => {
     setPosts(submittedPosts);
     setCurrentStep("confirmation");
   };
@@ -62,9 +56,11 @@ export default function Home() {
     return (
       <ConfirmationScreen
         profileData={profileData || undefined}
-        postsCount={posts.length}
+        posts={posts}
         onComplete={handleConfirmationComplete}
         onBack={() => setCurrentStep("post-history")}
+        onEditProfile={() => setCurrentStep("profile-setup")}
+        onEditPosts={() => setCurrentStep("post-history")}
       />
     );
   }

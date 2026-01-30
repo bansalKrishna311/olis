@@ -1,27 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import ConfirmationScreen from "./ConfirmationScreen";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+export interface PostData {
+  content: string;
+  isFeatured: boolean;
+}
+
 interface PostHistorySetupProps {
-  onComplete?: (posts: string[]) => void;
+  onComplete?: (posts: PostData[]) => void;
   onBack?: () => void;
 }
 
 export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetupProps) {
-  const [posts, setPosts] = useState<string[]>([]);
+  const [posts, setPosts] = useState<PostData[]>([]);
   const [currentPost, setCurrentPost] = useState("");
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   const handleAddPost = () => {
     if (currentPost.trim()) {
-      setPosts((prev) => [...prev, currentPost.trim()]);
+      setPosts((prev) => [...prev, { content: currentPost.trim(), isFeatured }]);
       setCurrentPost("");
+      setIsFeatured(false);
     }
   };
 
@@ -29,27 +34,21 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
     setPosts((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleToggleFeatured = (index: number) => {
+    setPosts((prev) => 
+      prev.map((post, i) => 
+        i === index ? { ...post, isFeatured: !post.isFeatured } : post
+      )
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // For static demo, just show confirmation screen
-    setShowConfirmation(true);
-    // onComplete?.(posts);
+    onComplete?.(posts);
   };
 
-  const handleSkip = () => {
-    onComplete?.([]);
-  };
-
-  if (showConfirmation) {
-    return (
-      <ConfirmationScreen
-        profileData={undefined}
-        postsCount={posts.length}
-        onComplete={() => {}}
-        onBack={() => setShowConfirmation(false)}
-      />
-    );
-  }
+  const featuredCount = posts.filter(p => p.isFeatured).length;
+  const regularCount = posts.length - featuredCount;
 
   return (
     <div className="flex min-h-screen items-center justify-center overflow-hidden relative">
@@ -113,6 +112,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
         .fade-in-2 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards; opacity: 0; }
         .fade-in-3 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards; opacity: 0; }
         .fade-in-4 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards; opacity: 0; }
+        .fade-in-5 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards; opacity: 0; }
 
         .grain-overlay {
           position: fixed;
@@ -128,6 +128,11 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
         .post-item {
           animation: fadeInUp 0.3s ease-out forwards;
         }
+
+        .featured-badge {
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border: 1px solid #f59e0b;
+        }
       `}</style>
 
       {/* Gradient Background */}
@@ -142,7 +147,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
       <div className="grain-overlay"></div>
 
       {/* Main Content */}
-      <div className="z-10 w-full max-w-lg px-6 py-8">
+      <div className="z-10 w-full max-w-lg px-6 py-8 overflow-y-auto max-h-screen">
         {/* Progress Indicator */}
         <div className="fade-in-1 text-center mb-6">
           <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground font-modern">
@@ -153,24 +158,41 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
         <Card className="fade-in-2 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-2">
             <CardDescription className="text-xs uppercase tracking-widest font-modern">
-              Build your memory
+              Your content history
             </CardDescription>
             <CardTitle className="text-2xl font-medium tracking-tight font-modern">
-              Share some of your posts
+              Share your LinkedIn posts
             </CardTitle>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Reassurance Text */}
-              <div className="fade-in-3 bg-blue-50/80 border border-blue-100 rounded-lg p-4">
-                <p className="text-sm text-blue-700 font-modern text-center">
-                  💡 Even 5–10 posts are enough to start. You can always add more later.
+              {/* Purpose explanation */}
+              <div className="fade-in-3 bg-blue-50/80 border border-blue-100 rounded-lg p-4 space-y-2">
+                <p className="text-xs font-medium text-blue-800 font-modern">
+                  Why share your posts?
+                </p>
+                <p className="text-xs text-blue-700 font-modern">
+                  This helps us understand your current voice, content themes, and engagement style. 
+                  We'll identify gaps between your profile positioning and what you actually post.
                 </p>
               </div>
 
+              {/* Recommendation */}
+              <div className="fade-in-3 flex items-start gap-3 text-sm text-gray-600 font-modern">
+                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg">💡</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">We recommend sharing 5+ posts</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    The more posts you share, the better we can understand your style. But even a few is a great start.
+                  </p>
+                </div>
+              </div>
+
               {/* Textarea for pasting posts */}
-              <div className="fade-in-3 space-y-2">
+              <div className="fade-in-3 space-y-3">
                 <Label htmlFor="post" className="font-modern text-sm">
                   Paste a LinkedIn post
                 </Label>
@@ -181,6 +203,23 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                   placeholder="Copy and paste the content of one of your LinkedIn posts here..."
                   className="min-h-[120px] font-modern resize-none"
                 />
+                
+                {/* Featured toggle */}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isFeatured}
+                    onChange={(e) => setIsFeatured(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-gray-600 font-modern">
+                    Mark as featured post
+                  </span>
+                  <span className="text-xs text-muted-foreground font-modern">
+                    (posts you've pinned on your profile)
+                  </span>
+                </label>
+
                 <Button
                   type="button"
                   variant="outline"
@@ -197,46 +236,90 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                 <div className="fade-in-3 space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="font-modern text-sm">Added posts</Label>
-                    <Badge variant="secondary" className="font-modern">
-                      {posts.length} {posts.length === 1 ? "post" : "posts"}
-                    </Badge>
+                    <div className="flex gap-2">
+                      {featuredCount > 0 && (
+                        <Badge variant="secondary" className="font-modern text-amber-700 bg-amber-100">
+                          {featuredCount} featured
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="font-modern">
+                        {posts.length} total
+                      </Badge>
+                    </div>
                   </div>
                   <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
                     {posts.map((post, index) => (
                       <div
                         key={index}
-                        className="post-item bg-gray-50 rounded-lg p-3 relative group"
+                        className={`post-item rounded-lg p-3 relative group ${
+                          post.isFeatured ? "bg-amber-50 border border-amber-200" : "bg-gray-50"
+                        }`}
                       >
-                        <p className="text-sm text-gray-600 font-modern line-clamp-2 pr-8">
-                          {post}
+                        {post.isFeatured && (
+                          <span className="text-[10px] uppercase tracking-wider text-amber-600 font-medium font-modern">
+                            Featured
+                          </span>
+                        )}
+                        <p className="text-sm text-gray-600 font-modern line-clamp-2 pr-16">
+                          {post.content}
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePost(index)}
-                          className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
+                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleFeatured(index)}
+                            className={`p-1 rounded ${post.isFeatured ? "text-amber-500" : "text-gray-400 hover:text-amber-500"}`}
+                            title={post.isFeatured ? "Remove from featured" : "Mark as featured"}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={post.isFeatured ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePost(index)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Progress indicator for posts */}
+              <div className="fade-in-4 space-y-2">
+                <div className="flex justify-between text-xs font-modern">
+                  <span className="text-muted-foreground">Posts added</span>
+                  <span className={posts.length >= 5 ? "text-green-600" : "text-gray-600"}>
+                    {posts.length} / 5 recommended
+                  </span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-300 rounded-full ${
+                      posts.length >= 5 ? "bg-green-500" : "bg-blue-400"
+                    }`}
+                    style={{ width: `${Math.min((posts.length / 5) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+
               {/* Safety Message */}
-              <div className="fade-in-3 flex items-start gap-2 text-xs text-muted-foreground font-modern">
+              <div className="fade-in-4 flex items-start gap-2 text-xs text-muted-foreground font-modern">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <span>Your posts stay private and are only used to understand your writing style. We never share or publish your data.</span>
+                <span>Your posts are only used to understand your content style. We never share, store, or publish them externally.</span>
               </div>
 
               {/* Action Buttons */}
-              <div className="fade-in-4 flex gap-3 pt-2">
+              <div className="fade-in-5 flex gap-3 pt-2">
                 <Button
                   type="button"
                   variant="ghost"
@@ -258,8 +341,8 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
         </Card>
 
         {/* Helper Text */}
-        <p className="fade-in-4 text-xs text-center text-muted-foreground mt-4 font-modern">
-          You can complete this step partially and add more posts anytime.
+        <p className="fade-in-5 text-xs text-center text-muted-foreground mt-4 font-modern">
+          You can always add more posts later. This step improves recommendations but isn't mandatory.
         </p>
       </div>
     </div>
