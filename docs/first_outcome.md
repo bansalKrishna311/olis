@@ -1,0 +1,1 @@
+after using this one app i should know my specific niche and what  audience i should bne targetting 
