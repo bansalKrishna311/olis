@@ -2,51 +2,113 @@
 
 import { useState } from "react";
 import WelcomeAnimation from "./components/WelcomeAnimation";
+import ProfileSetup from "./components/ProfileSetup";
+import PostHistorySetup from "./components/PostHistorySetup";
+import ConfirmationScreen from "./components/ConfirmationScreen";
+
+type AppStep = "welcome" | "profile-setup" | "post-history" | "confirmation" | "main";
+
+interface ProfileData {
+  name: string;
+  headline: string;
+  linkedinUrl: string;
+}
 
 export default function Home() {
-  const [showAnimation, setShowAnimation] = useState(true);
+  const [currentStep, setCurrentStep] = useState<AppStep>("welcome");
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [posts, setPosts] = useState<string[]>([]);
 
   const handleAnimationComplete = () => {
-    setShowAnimation(true);
+    setCurrentStep("profile-setup");
   };
 
+  const handleProfileComplete = (data: ProfileData) => {
+    setProfileData(data);
+    setCurrentStep("post-history");
+  };
+
+  const handlePostHistoryComplete = (submittedPosts: string[]) => {
+    setPosts(submittedPosts);
+    setCurrentStep("confirmation");
+  };
+
+  const handleConfirmationComplete = () => {
+    setCurrentStep("main");
+  };
+
+  // Welcome Animation
+  if (currentStep === "welcome") {
+    return <WelcomeAnimation onAnimationComplete={handleAnimationComplete} />;
+  }
+
+  // Profile Setup (Step 1)
+  if (currentStep === "profile-setup") {
+    return <ProfileSetup onComplete={handleProfileComplete} />;
+  }
+
+  // Post History Setup (Step 2)
+  if (currentStep === "post-history") {
+    return (
+      <PostHistorySetup
+        onComplete={handlePostHistoryComplete}
+        onBack={() => setCurrentStep("profile-setup")}
+      />
+    );
+  }
+
+  // Confirmation Screen (Step 3)
+  if (currentStep === "confirmation") {
+    return (
+      <ConfirmationScreen
+        profileData={profileData || undefined}
+        postsCount={posts.length}
+        onComplete={handleConfirmationComplete}
+        onBack={() => setCurrentStep("post-history")}
+      />
+    );
+  }
+
+  // Main App (placeholder for now)
   return (
-    <>
-      {showAnimation && (
-        <WelcomeAnimation onAnimationComplete={handleAnimationComplete} />
-      )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white p-8">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
 
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white p-8">
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Great+Vibes&display=swap');
+        .font-modern {
+          font-family: 'Sora', sans-serif;
+        }
 
-          .font-modern {
-            font-family: 'Poppins', sans-serif;
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
           }
-
-          .font-cursive-funky {
-            font-family: 'Great Vibes', cursive;
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
+        }
+      `}</style>
 
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(40px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}</style>
-
-        <h1
-          className="text-6xl md:text-7xl font-bold font-modern"
-          style={{ color: "#001f3f", animation: "fadeInUp 1s ease-out forwards" }}
-        >
-          Hello World
-        </h1>
-      </div>
-    </>
+      <h1
+        className="text-4xl md:text-5xl font-medium font-modern tracking-tight"
+        style={{ color: "#0f172a", animation: "fadeInUp 0.8s ease-out forwards" }}
+      >
+        Welcome, {profileData?.name || "User"}!
+      </h1>
+      <p
+        className="text-lg font-modern mt-4"
+        style={{ color: "#64748b", animation: "fadeInUp 0.8s ease-out 0.1s forwards", opacity: 0 }}
+      >
+        {profileData?.headline}
+      </p>
+      <p
+        className="text-sm font-modern mt-2"
+        style={{ color: "#94a3b8", animation: "fadeInUp 0.8s ease-out 0.2s forwards", opacity: 0 }}
+      >
+        {posts.length > 0 ? `${posts.length} posts loaded` : "No posts shared yet"}
+      </p>
+    </div>
   );
 }
