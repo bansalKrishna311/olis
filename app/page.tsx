@@ -4,10 +4,10 @@ import { useState } from "react";
 import WelcomeAnimation from "./components/WelcomeAnimation";
 
 export default function Home() {
-  const [showAnimation, setShowAnimation] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(true);
 
   const handleAnimationComplete = () => {
-    setShowAnimation(false);
+    setShowAnimation(true);
   };
 
   return (

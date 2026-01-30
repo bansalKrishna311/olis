@@ -10,58 +10,61 @@ export default function WelcomeAnimation({ onAnimationComplete }: WelcomeAnimati
   const [currentPage, setCurrentPage] = useState(0);
   const [fade, setFade] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
-  const [hasSeenAnimation, setHasSeenAnimation] = useState(false);
 
   useEffect(() => {
-    // Check if animation has been shown before in this session
-    const animationShown = sessionStorage.getItem("olisAnimationShown");
-    if (animationShown) {
-      setShowIntro(false);
-      return;
-    }
-    
-    setHasSeenAnimation(true);
-  }, []);
-
-  useEffect(() => {
-    if (!showIntro || !hasSeenAnimation) return;
+    if (!showIntro) return;
 
     const timer = setInterval(() => {
       setFade(false);
       setTimeout(() => {
         setCurrentPage((prev) => {
           const next = prev + 1;
-          if (next >= 3) {
-            setShowIntro(false);
-            // Mark animation as shown in this session
-            sessionStorage.setItem("olisAnimationShown", "true");
-            onAnimationComplete?.();
+          if (next >= 4) {
+            handleComplete();
             return 0;
           }
           return next;
         });
         setFade(true);
       }, 500);
-    }, 5000);
+    }, 3500);
 
     return () => clearInterval(timer);
   }, [showIntro]);
+
+  const handleComplete = () => {
+    setShowIntro(false);
+    onAnimationComplete?.();
+  };
+
+  const handleSkip = () => {
+    handleComplete();
+  };
 
   const pages = [
     {
       title: "Welcome to",
       subtitle: "OLIS",
+      description: "",
       subtitleStyle: "text-7xl md:text-8xl font-black tracking-tighter",
     },
     {
-      title: "Your single step to",
-      subtitle: "finding your niche",
-      subtitleStyle: "text-6xl md:text-7xl font-bold",
+      title: "This tool thinks",
+      subtitle: "with you, not for you",
+      description: "",
+      subtitleStyle: "text-5xl md:text-6xl font-bold",
     },
     {
-      title: "Making the right use of",
-      subtitle: "LinkedIn without any cost",
-      subtitleStyle: "text-6xl md:text-7xl font-bold",
+      title: "Your data stays",
+      subtitle: "yours only",
+      description: "No auto-posting. No growth hacks.",
+      subtitleStyle: "text-5xl md:text-6xl font-bold",
+    },
+    {
+      title: "Ready?",
+      subtitle: "Let's begin",
+      description: "",
+      subtitleStyle: "text-5xl md:text-6xl font-bold",
     },
   ];
 
@@ -72,7 +75,7 @@ export default function WelcomeAnimation({ onAnimationComplete }: WelcomeAnimati
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white overflow-hidden">
+    <div className="flex min-h-screen items-center justify-center bg-white overflow-hidden relative">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&family=Great+Vibes&display=swap');
 
@@ -157,6 +160,11 @@ export default function WelcomeAnimation({ onAnimationComplete }: WelcomeAnimati
           opacity: 0;
         }
 
+        .description-text {
+          animation: fadeInUp 0.8s ease-out 0.6s forwards;
+          opacity: 0;
+        }
+
         .dot {
           transition: all 0.3s ease;
         }
@@ -171,16 +179,21 @@ export default function WelcomeAnimation({ onAnimationComplete }: WelcomeAnimati
         }
       `}</style>
 
+      {/* Skip Button */}
+      <button
+        onClick={handleSkip}
+        className="absolute top-8 right-8 text-sm font-modern font-medium hover:text-gray-900 transition-colors z-10"
+        style={{ color: "#64748b" }}
+      >
+        Skip
+      </button>
+
       <main
         className={`flex flex-col items-center justify-center text-center px-8 max-w-4xl py-20 transition-opacity duration-500 ${
           fade ? "page-enter" : "page-exit"
         }`}
       >
-        {/* Accent Line */}
-        <div
-          className="accent-line w-16 h-1.5 rounded-full mb-12"
-          style={{ backgroundColor: "#001f3f" }}
-        ></div>
+       
 
         {/* Title */}
         <p
@@ -198,17 +211,17 @@ export default function WelcomeAnimation({ onAnimationComplete }: WelcomeAnimati
           {page.subtitle}
         </h1>
 
-        {/* Progress Dots */}
-        <div className="flex gap-2 justify-center mt-16">
-          {[0, 1, 2].map((index) => (
-            <div
-              key={index}
-              className={`dot w-2.5 h-2.5 rounded-full ${
-                index === currentPage ? "active" : "inactive"
-              }`}
-            ></div>
-          ))}
-        </div>
+        {/* Description */}
+        {page.description && (
+          <p
+            className="description-text text-lg md:text-xl font-modern font-light mt-6"
+            style={{ color: "#64748b" }}
+          >
+            {page.description}
+          </p>
+        )}
+
+      
       </main>
     </div>
   );
