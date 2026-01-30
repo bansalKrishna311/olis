@@ -2,13 +2,29 @@
 
 import { useEffect, useState } from "react";
 
-export default function WelcomeAnimation() {
+interface WelcomeAnimationProps {
+  onAnimationComplete?: () => void;
+}
+
+export default function WelcomeAnimation({ onAnimationComplete }: WelcomeAnimationProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [fade, setFade] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
+  const [hasSeenAnimation, setHasSeenAnimation] = useState(false);
 
   useEffect(() => {
-    if (!showIntro) return;
+    // Check if animation has been shown before in this session
+    const animationShown = sessionStorage.getItem("olisAnimationShown");
+    if (animationShown) {
+      setShowIntro(false);
+      return;
+    }
+    
+    setHasSeenAnimation(true);
+  }, []);
+
+  useEffect(() => {
+    if (!showIntro || !hasSeenAnimation) return;
 
     const timer = setInterval(() => {
       setFade(false);
@@ -17,6 +33,9 @@ export default function WelcomeAnimation() {
           const next = prev + 1;
           if (next >= 3) {
             setShowIntro(false);
+            // Mark animation as shown in this session
+            sessionStorage.setItem("olisAnimationShown", "true");
+            onAnimationComplete?.();
             return 0;
           }
           return next;
