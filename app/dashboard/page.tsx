@@ -377,7 +377,7 @@ export default function DashboardPage() {
         </div>
 
         {posts.length === 0 ? (
-          <Card className="border-0 shadow-sm border-dashed border-2 border-gray-200">
+          <Card className="shadow-sm border-dashed border-2 border-gray-200">
             <CardContent className="py-8 text-center">
               <FileText className="h-8 w-8 text-gray-300 mx-auto mb-3" />
               <p className="text-sm text-gray-500 font-modern mb-3">

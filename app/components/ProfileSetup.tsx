@@ -7,11 +7,61 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export interface ProfileData {
+  // Core identity (read-only from PDF)
   name: string;
-  headline: string;
+  fullName?: string;
   linkedinUrl: string;
   pdfFile: File | null;
   pdfFileName: string;
+  
+  // Profile sections (editable)
+  headline: string;
+  summary?: string;
+  
+  // Location & Industry
+  location?: string;
+  industry?: string;
+  
+  // Current position
+  currentPosition?: string;
+  currentCompany?: string;
+  
+  // Experience (array of positions)
+  experience?: {
+    title: string;
+    company: string;
+    location?: string;
+    startDate?: string;
+    endDate?: string;
+    current?: boolean;
+    description?: string;
+  }[];
+  
+  // Education
+  education?: {
+    school: string;
+    degree?: string;
+    field?: string;
+    startYear?: string;
+    endYear?: string;
+    description?: string;
+  }[];
+  
+  // Skills
+  skills?: string[];
+  
+  // Additional sections
+  languages?: { language: string; proficiency?: string }[];
+  certifications?: { name: string; issuer?: string; date?: string }[];
+  volunteerExperience?: { role: string; organization: string; description?: string }[];
+  publications?: { title: string; publisher?: string; date?: string }[];
+  projects?: { name: string; description?: string }[];
+  honorsAwards?: { title: string; issuer?: string; date?: string }[];
+  
+  // Contact info
+  email?: string;
+  phone?: string;
+  website?: string;
 }
 
 interface ProfileSetupProps {

@@ -38,8 +38,7 @@ const navItems = [
     label: "Insights", 
     href: "/dashboard/insights", 
     icon: Lightbulb,
-    locked: true,
-    lockedReason: "Coming soon"
+    locked: false
   },
   { 
     label: "Settings", 

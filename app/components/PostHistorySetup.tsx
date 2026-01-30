@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 
 export interface PostData {
+  id: string;
   content: string;
   isFeatured: boolean;
   mediaDescription?: string;
@@ -29,6 +30,7 @@ export default function PostHistorySetup({ onComplete, onBack, initialPosts = []
   const handleAddPost = () => {
     if (currentPost.trim()) {
       setPosts((prev) => [...prev, { 
+        id: Date.now().toString(),
         content: currentPost.trim(), 
         isFeatured,
         mediaDescription: hasMedia ? mediaDescription.trim() : undefined
