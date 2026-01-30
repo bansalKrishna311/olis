@@ -10,23 +10,33 @@ import { Badge } from "@/components/ui/badge";
 export interface PostData {
   content: string;
   isFeatured: boolean;
+  mediaDescription?: string;
 }
 
 interface PostHistorySetupProps {
   onComplete?: (posts: PostData[]) => void;
   onBack?: () => void;
+  initialPosts?: PostData[];
 }
 
-export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetupProps) {
-  const [posts, setPosts] = useState<PostData[]>([]);
+export default function PostHistorySetup({ onComplete, onBack, initialPosts = [] }: PostHistorySetupProps) {
+  const [posts, setPosts] = useState<PostData[]>(initialPosts);
   const [currentPost, setCurrentPost] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [mediaDescription, setMediaDescription] = useState("");
+  const [hasMedia, setHasMedia] = useState(false);
 
   const handleAddPost = () => {
     if (currentPost.trim()) {
-      setPosts((prev) => [...prev, { content: currentPost.trim(), isFeatured }]);
+      setPosts((prev) => [...prev, { 
+        content: currentPost.trim(), 
+        isFeatured,
+        mediaDescription: hasMedia ? mediaDescription.trim() : undefined
+      }]);
       setCurrentPost("");
       setIsFeatured(false);
+      setMediaDescription("");
+      setHasMedia(false);
     }
   };
 
@@ -133,6 +143,21 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
           background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
           border: 1px solid #f59e0b;
         }
+
+        .posts-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .posts-scroll::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        .posts-scroll::-webkit-scrollbar-thumb {
+          background: #c4c4c4;
+          border-radius: 4px;
+        }
+        .posts-scroll::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+        }
       `}</style>
 
       {/* Gradient Background */}
@@ -147,16 +172,16 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
       <div className="grain-overlay"></div>
 
       {/* Main Content */}
-      <div className="z-10 w-full max-w-3xl px-6 py-8">
+      <div className="z-10 w-full max-w-3xl px-6 py-4">
         {/* Progress Indicator */}
-        <div className="fade-in-1 text-center mb-6">
+        <div className="fade-in-1 text-center mb-3">
           <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground font-modern">
             Step 2 of 3
           </span>
         </div>
 
         <Card className="fade-in-2 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-4">
+          <CardHeader className="text-center pb-2 pt-4">
             <CardDescription className="text-xs uppercase tracking-widest font-modern">
               Your content history
             </CardDescription>
@@ -166,13 +191,13 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Two column layout */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-5">
                 {/* Left Column - Post Input */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Purpose explanation */}
-                  <div className="fade-in-3 bg-blue-50/80 border border-blue-100 rounded-lg p-3 space-y-1">
+                  <div className="fade-in-3 bg-blue-50/80 border border-blue-100 rounded-lg p-2.5 space-y-1">
                     <p className="text-xs font-medium text-blue-800 font-modern">
                       Why share your posts?
                     </p>
@@ -182,7 +207,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                   </div>
 
                   {/* Textarea for pasting posts */}
-                  <div className="fade-in-3 space-y-3">
+                  <div className="fade-in-3 space-y-2">
                     <Label htmlFor="post" className="font-modern text-sm">
                       Paste a LinkedIn post
                     </Label>
@@ -191,8 +216,32 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                       value={currentPost}
                       onChange={(e) => setCurrentPost(e.target.value)}
                       placeholder="Copy and paste the content of one of your LinkedIn posts here..."
-                      className="min-h-[140px] font-modern resize-none"
+                      className="min-h-[100px] font-modern resize-none"
                     />
+                    
+                    {/* Media description toggle and input */}
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={hasMedia}
+                          onChange={(e) => setHasMedia(e.target.checked)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-600 font-modern">
+                          Post has photos/videos
+                        </span>
+                      </label>
+                      
+                      {hasMedia && (
+                        <Textarea
+                          value={mediaDescription}
+                          onChange={(e) => setMediaDescription(e.target.value)}
+                          placeholder="Describe the image/video (e.g., 'Screenshot of dashboard metrics', 'Team photo at conference')..."
+                          className="min-h-[60px] font-modern resize-none text-sm"
+                        />
+                      )}
+                    </div>
                     
                     {/* Featured toggle */}
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -220,10 +269,10 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                 </div>
 
                 {/* Right Column - Added Posts */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Recommendation */}
-                  <div className="fade-in-3 flex items-start gap-3 text-sm text-gray-600 font-modern bg-amber-50/50 rounded-lg p-3">
-                    <span className="text-lg">💡</span>
+                  <div className="fade-in-3 flex items-start gap-2 text-sm text-gray-600 font-modern bg-amber-50/50 rounded-lg p-2.5">
+                    <span className="text-base">💡</span>
                     <div>
                       <p className="font-medium text-gray-700 text-sm">We recommend 5+ posts</p>
                       <p className="text-xs text-muted-foreground">
@@ -233,7 +282,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                   </div>
 
                   {/* Progress indicator for posts */}
-                  <div className="fade-in-4 space-y-2">
+                  <div className="fade-in-4 space-y-1.5">
                     <div className="flex justify-between text-xs font-modern">
                       <span className="text-muted-foreground">Posts added</span>
                       <span className={posts.length >= 5 ? "text-green-600" : "text-gray-600"}>
@@ -252,7 +301,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
 
                   {/* Added Posts */}
                   {posts.length > 0 ? (
-                    <div className="fade-in-3 space-y-3">
+                    <div className="fade-in-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <Label className="font-modern text-sm">Added posts</Label>
                         <div className="flex gap-2">
@@ -266,22 +315,39 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                           </Badge>
                         </div>
                       </div>
-                      <div className="space-y-2 max-h-[180px] overflow-y-auto pr-2">
+                      <div className="space-y-2 max-h-[180px] overflow-y-auto posts-scroll pr-1">
                         {posts.map((post, index) => (
                           <div
                             key={index}
-                            className={`post-item rounded-lg p-3 relative group ${
+                            className={`post-item rounded-lg p-2.5 relative group ${
                               post.isFeatured ? "bg-amber-50 border border-amber-200" : "bg-gray-50"
                             }`}
                           >
-                            {post.isFeatured && (
-                              <span className="text-[10px] uppercase tracking-wider text-amber-600 font-medium font-modern">
-                                Featured
-                              </span>
-                            )}
-                            <p className="text-sm text-gray-600 font-modern line-clamp-2 pr-12">
+                            <div className="flex items-center gap-2 mb-1">
+                              {post.isFeatured && (
+                                <span className="text-[10px] uppercase tracking-wider text-amber-600 font-medium font-modern">
+                                  Featured
+                                </span>
+                              )}
+                              {post.mediaDescription && (
+                                <span className="text-[10px] uppercase tracking-wider text-blue-600 font-medium font-modern flex items-center gap-1">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                  </svg>
+                                  Media
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 font-modern line-clamp-2 pr-10">
                               {post.content}
                             </p>
+                            {post.mediaDescription && (
+                              <p className="text-xs text-blue-600 font-modern mt-1 line-clamp-1">
+                                📷 {post.mediaDescription}
+                              </p>
+                            )}
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 type="button"
@@ -309,7 +375,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                       </div>
                     </div>
                   ) : (
-                    <div className="fade-in-3 border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                    <div className="fade-in-3 border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
                       <p className="text-sm text-muted-foreground font-modern">No posts added yet</p>
                       <p className="text-xs text-muted-foreground font-modern mt-1">Paste your first post on the left</p>
                     </div>
@@ -317,17 +383,17 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
 
                   {/* Safety Message */}
                   <div className="fade-in-4 flex items-start gap-2 text-xs text-muted-foreground font-modern">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                       <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
-                    <span>Posts are only used to understand your style. Never shared externally.</span>
+                    <span>Posts are only used to understand your style.</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="fade-in-5 flex gap-3 pt-2">
+              <div className="fade-in-5 flex gap-3">
                 <Button
                   type="button"
                   variant="ghost"
@@ -338,7 +404,7 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 h-11 font-modern font-medium"
+                  className="flex-1 h-10 font-modern font-medium"
                   size="lg"
                 >
                   {posts.length > 0 ? "Continue" : "Skip for now"}
@@ -349,8 +415,8 @@ export default function PostHistorySetup({ onComplete, onBack }: PostHistorySetu
         </Card>
 
         {/* Helper Text */}
-        <p className="fade-in-5 text-xs text-center text-muted-foreground mt-4 font-modern">
-          You can always add more posts later. This step improves recommendations but isn't mandatory.
+        <p className="fade-in-5 text-xs text-center text-muted-foreground mt-3 font-modern">
+          You can always add more posts later.
         </p>
       </div>
     </div>

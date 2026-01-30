@@ -6,10 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface ProfileSetupProps {
-  onComplete?: (data: ProfileData) => void;
-}
-
 export interface ProfileData {
   name: string;
   headline: string;
@@ -18,13 +14,18 @@ export interface ProfileData {
   pdfFileName: string;
 }
 
-export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
+interface ProfileSetupProps {
+  onComplete?: (data: ProfileData) => void;
+  initialData?: ProfileData | null;
+}
+
+export default function ProfileSetup({ onComplete, initialData }: ProfileSetupProps) {
   const [formData, setFormData] = useState<ProfileData>({
-    name: "",
-    headline: "",
-    linkedinUrl: "",
-    pdfFile: null,
-    pdfFileName: "",
+    name: initialData?.name || "",
+    headline: initialData?.headline || "",
+    linkedinUrl: initialData?.linkedinUrl || "",
+    pdfFile: initialData?.pdfFile || null,
+    pdfFileName: initialData?.pdfFileName || "",
   });
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -205,18 +206,18 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Two column layout */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-5">
                 {/* Left Column - PDF Upload */}
-                <div className="fade-in-3 space-y-4">
+                <div className="fade-in-3 space-y-3">
                   <Label className="font-modern text-sm flex items-center gap-2">
                     LinkedIn Profile PDF
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Required</span>
                   </Label>
                   
                   <div
-                    className={`upload-zone rounded-lg p-8 text-center cursor-pointer h-48 flex items-center justify-center ${
+                    className={`upload-zone rounded-lg p-6 text-center cursor-pointer h-36 flex items-center justify-center ${
                       isDragging ? "dragging" : ""
                     } ${formData.pdfFile ? "has-file" : ""}`}
                     onDragOver={handleDragOver}
@@ -233,9 +234,9 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
                     />
                     
                     {formData.pdfFile ? (
-                      <div className="space-y-2">
-                        <div className="w-12 h-12 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <div className="space-y-1">
+                        <div className="w-10 h-10 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="20 6 9 17 4 12"></polyline>
                           </svg>
                         </div>
@@ -245,13 +246,13 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
                           onClick={(e) => { e.stopPropagation(); handleRemovePdf(); }}
                           className="text-xs text-red-500 hover:text-red-600 font-modern"
                         >
-                          Remove file
+                          Remove
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        <div className="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <div className="space-y-2">
+                        <div className="w-10 h-10 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -261,7 +262,7 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
                           <p className="text-sm font-medium text-gray-700 font-modern">
                             Drop your LinkedIn PDF here
                           </p>
-                          <p className="text-xs text-muted-foreground font-modern mt-1">
+                          <p className="text-xs text-muted-foreground font-modern">
                             or click to browse
                           </p>
                         </div>
@@ -311,15 +312,15 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
                 </div>
 
                 {/* Right Column - Form Fields */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 mb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 mb-1">
                     <div className="flex-1 h-px bg-gray-200 md:hidden"></div>
                     <span className="text-xs text-muted-foreground font-modern">Confirm your identity</span>
                     <div className="flex-1 h-px bg-gray-200 md:hidden"></div>
                   </div>
 
                   {/* Name Field */}
-                  <div className="fade-in-4 space-y-2">
+                  <div className="fade-in-4 space-y-1">
                     <Label htmlFor="name" className="font-modern text-sm">
                       Full name
                     </Label>
@@ -330,12 +331,12 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="e.g. Priya Sharma"
-                      className="h-11 font-modern"
+                      className="h-10 font-modern"
                     />
                   </div>
 
                   {/* Headline Field */}
-                  <div className="fade-in-4 space-y-2">
+                  <div className="fade-in-4 space-y-1">
                     <Label htmlFor="headline" className="font-modern text-sm">
                       Current headline or role
                     </Label>
@@ -346,12 +347,12 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
                       value={formData.headline}
                       onChange={handleChange}
                       placeholder="e.g. Product Designer at Figma"
-                      className="h-11 font-modern"
+                      className="h-10 font-modern"
                     />
                   </div>
 
                   {/* LinkedIn URL Field */}
-                  <div className="fade-in-4 space-y-2">
+                  <div className="fade-in-4 space-y-1">
                     <Label htmlFor="linkedinUrl" className="font-modern text-sm">
                       LinkedIn profile URL
                       <span className="text-xs text-muted-foreground ml-2">(optional)</span>
@@ -363,14 +364,14 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
                       value={formData.linkedinUrl}
                       onChange={handleChange}
                       placeholder="https://linkedin.com/in/your-profile"
-                      className="h-11 font-modern"
+                      className="h-10 font-modern"
                     />
                   </div>
 
                   {/* What happens next */}
-                  <div className="fade-in-5 bg-gray-50 rounded-lg p-3 space-y-2">
+                  <div className="fade-in-5 bg-gray-50 rounded-lg p-2.5 space-y-1">
                     <p className="text-xs font-medium text-gray-700 font-modern">What happens next?</p>
-                    <ul className="text-xs text-gray-600 font-modern space-y-1">
+                    <ul className="text-xs text-gray-600 font-modern space-y-0.5">
                       <li>• We'll extract your experience, skills, and profile structure</li>
                       <li>• You'll review everything before we proceed</li>
                       <li>• Nothing shared without your approval</li>
@@ -380,11 +381,11 @@ export default function ProfileSetup({ onComplete }: ProfileSetupProps) {
               </div>
 
               {/* Submit Button - Full Width */}
-              <div className="fade-in-5 pt-2">
+              <div className="fade-in-5">
                 <Button
                   type="submit"
                   disabled={!isFormValid}
-                  className="w-full h-11 font-modern font-medium"
+                  className="w-full h-10 font-modern font-medium"
                   size="lg"
                 >
                   Continue

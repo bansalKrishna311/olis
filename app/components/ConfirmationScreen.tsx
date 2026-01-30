@@ -30,7 +30,7 @@ export default function ConfirmationScreen({
   const regularPosts = posts.filter(p => !p.isFeatured);
 
   return (
-    <div className="flex min-h-screen items-center justify-center overflow-hidden relative">
+    <div className="flex h-screen items-center justify-center overflow-hidden relative">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
 
@@ -119,6 +119,21 @@ export default function ConfirmationScreen({
           border-radius: 12px;
           border: 1px solid #e5e7eb;
         }
+
+        .posts-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .posts-scroll::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        .posts-scroll::-webkit-scrollbar-thumb {
+          background: #c4c4c4;
+          border-radius: 4px;
+        }
+        .posts-scroll::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+        }
       `}</style>
 
       {/* Gradient Background */}
@@ -134,16 +149,16 @@ export default function ConfirmationScreen({
       <div className="grain-overlay"></div>
 
       {/* Main Content */}
-      <div className="z-10 w-full max-w-3xl px-6 py-8">
+      <div className="z-10 w-full max-w-3xl px-6 py-4">
         {/* Progress Indicator */}
-        <div className="fade-in-1 text-center mb-6">
+        <div className="fade-in-1 text-center mb-3">
           <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground font-modern">
             Step 3 of 3
           </span>
         </div>
 
         <Card className="fade-in-2 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-4">
+          <CardHeader className="text-center pb-2 pt-4">
             <CardDescription className="text-xs uppercase tracking-widest font-modern">
               Review & Confirm
             </CardDescription>
@@ -155,11 +170,11 @@ export default function ConfirmationScreen({
             </p>
           </CardHeader>
 
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-4">
             {/* Two column layout */}
-            <div className="grid md:grid-cols-2 gap-5">
+            <div className="grid md:grid-cols-2 gap-4">
               {/* Left Column - Profile Data */}
-              <div className="fade-in-3 section-card p-4 space-y-3">
+              <div className="fade-in-3 section-card p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium text-gray-800 font-modern flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -176,30 +191,30 @@ export default function ConfirmationScreen({
                   </button>
                 </div>
                 
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                     <span className="text-xs text-muted-foreground font-modern">Name</span>
                     <span className="text-sm font-medium text-gray-700 font-modern">
                       {profileData?.name || "Not provided"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                     <span className="text-xs text-muted-foreground font-modern">Headline</span>
                     <span className="text-sm font-medium text-gray-700 font-modern max-w-[160px] text-right truncate">
                       {profileData?.headline || "Not provided"}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                     <span className="text-xs text-muted-foreground font-modern">LinkedIn PDF</span>
                     <span className="text-sm font-medium text-green-600 font-modern flex items-center gap-1">
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      {profileData?.pdfFileName ? "Uploaded" : "Uploaded"}
+                      Uploaded
                     </span>
                   </div>
                   {profileData?.linkedinUrl && (
-                    <div className="flex justify-between items-center py-2">
+                    <div className="flex justify-between items-center py-1.5">
                       <span className="text-xs text-muted-foreground font-modern">Profile URL</span>
                       <span className="text-sm text-blue-600 font-modern truncate max-w-[140px]">
                         {profileData.linkedinUrl}
@@ -209,8 +224,8 @@ export default function ConfirmationScreen({
                 </div>
 
                 {/* What we'll extract */}
-                <div className="bg-gray-50 rounded-lg p-3 mt-3">
-                  <p className="text-xs font-medium text-gray-700 font-modern mb-2">From your PDF, we'll extract:</p>
+                <div className="bg-gray-50 rounded-lg p-2.5">
+                  <p className="text-xs font-medium text-gray-700 font-modern mb-1.5">From your PDF, we'll extract:</p>
                   <div className="flex flex-wrap gap-1.5">
                     <Badge variant="secondary" className="font-modern text-xs">Experience</Badge>
                     <Badge variant="secondary" className="font-modern text-xs">Skills</Badge>
@@ -221,7 +236,7 @@ export default function ConfirmationScreen({
               </div>
 
               {/* Right Column - Posts Section */}
-              <div className="fade-in-4 section-card p-4 space-y-3">
+              <div className="fade-in-4 section-card p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium text-gray-800 font-modern flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -254,31 +269,28 @@ export default function ConfirmationScreen({
                       )}
                     </div>
                     
-                    {/* Preview of posts */}
-                    <div className="space-y-2 max-h-[140px] overflow-y-auto">
-                      {posts.slice(0, 4).map((post, index) => (
-                        <div key={index} className={`text-xs p-2 rounded ${post.isFeatured ? "bg-amber-50" : "bg-gray-50"}`}>
+                    {/* Preview of posts - scrollable */}
+                    <div className="space-y-1.5 max-h-[100px] overflow-y-auto posts-scroll pr-1">
+                      {posts.slice(0, 2).map((post, index) => (
+                        <div key={index} className={`text-xs p-1.5 rounded ${post.isFeatured ? "bg-amber-50" : "bg-gray-50"}`}>
                           <p className="text-gray-600 font-modern line-clamp-1">{post.content}</p>
                         </div>
                       ))}
-                      {posts.length > 4 && (
+                      {posts.length > 2 && (
                         <p className="text-xs text-muted-foreground font-modern">
-                          + {posts.length - 4} more posts
+                          + {posts.length - 2} more posts
                         </p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-6">
-                    <p className="text-sm text-muted-foreground font-modern">No posts shared yet</p>
-                    <p className="text-xs text-muted-foreground font-modern mt-1">
-                      You can add posts later to improve recommendations
-                    </p>
+                  <div className="text-center py-3">
+                    <p className="text-sm text-muted-foreground font-modern">No posts shared</p>
                   </div>
                 )}
 
                 {/* What happens next - now in right column */}
-                <div className="bg-gray-50 rounded-lg p-3 mt-auto">
+                <div className="bg-gray-50 rounded-lg p-2.5">
                   <p className="text-xs font-medium text-gray-700 font-modern mb-1.5">What we'll analyze:</p>
                   <div className="flex flex-wrap gap-1.5">
                     <Badge variant="secondary" className="font-modern text-xs">Content themes</Badge>
@@ -290,27 +302,27 @@ export default function ConfirmationScreen({
             </div>
 
             {/* Confirmation checkbox - full width */}
-            <div className="fade-in-5 bg-green-50/80 border border-green-200 rounded-lg p-4">
-              <label className="flex items-start gap-3 cursor-pointer">
+            <div className="fade-in-5 bg-green-50/80 border border-green-200 rounded-lg p-2.5">
+              <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={isConfirmed}
                   onChange={(e) => setIsConfirmed(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 rounded border-green-300 text-green-600 focus:ring-green-500"
+                  className="w-4 h-4 mt-0.5 rounded border-green-300 text-green-600 focus:ring-green-500"
                 />
                 <div>
                   <p className="text-sm font-medium text-green-800 font-modern">
                     Yes, this represents my LinkedIn presence accurately
                   </p>
-                  <p className="text-xs text-green-700 font-modern mt-1">
-                    I understand that OLIS will use this information to analyze my profile and provide personalized insights.
+                  <p className="text-xs text-green-700 font-modern">
+                    OLIS will use this to analyze your profile and provide personalized insights.
                   </p>
                 </div>
               </label>
             </div>
 
             {/* Action Buttons */}
-            <div className="fade-in-6 flex gap-3 pt-2">
+            <div className="fade-in-6 flex gap-3">
               <Button
                 type="button"
                 variant="ghost"
@@ -322,7 +334,7 @@ export default function ConfirmationScreen({
               <Button
                 onClick={onComplete}
                 disabled={!isConfirmed}
-                className="flex-1 h-11 font-modern font-medium"
+                className="flex-1 h-10 font-modern font-medium"
                 size="lg"
               >
                 Begin Analysis →
@@ -332,7 +344,7 @@ export default function ConfirmationScreen({
         </Card>
 
         {/* Trust reminder */}
-        <div className="fade-in-6 flex items-center justify-center gap-2 text-xs text-muted-foreground mt-4 font-modern">
+        <div className="fade-in-6 flex items-center justify-center gap-2 text-xs text-muted-foreground mt-3 font-modern">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
