@@ -306,6 +306,7 @@ export default function VoicePage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [config, setConfig] = useState<VoiceConfig>(DEFAULT_CONFIG);
   const [showOutput, setShowOutput] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -320,6 +321,13 @@ export default function VoicePage() {
     }
     setIsHydrated(true);
   }, []);
+
+  const startNewVoice = () => {
+    setConfig(DEFAULT_CONFIG);
+    setCurrentStep(0);
+    setShowWizard(true);
+    setShowOutput(false);
+  };
 
   const saveConfig = (updates: Partial<VoiceConfig>) => {
     const newConfig = { ...config, ...updates };
@@ -393,6 +401,7 @@ export default function VoicePage() {
   const approveVoice = () => {
     saveConfig({ approved: true });
     setShowOutput(true);
+    setShowWizard(false);
   };
 
   const resetVoice = () => {
@@ -401,7 +410,13 @@ export default function VoicePage() {
       localStorage.removeItem(STORAGE_KEY);
       setCurrentStep(0);
       setShowOutput(false);
+      setShowWizard(false);
     }
+  };
+
+  const editVoice = () => {
+    setShowOutput(false);
+    setShowWizard(true);
   };
 
   const step = STEPS[currentStep];
@@ -413,6 +428,87 @@ export default function VoicePage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="w-10 h-10 border-3 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LANDING VIEW - Show existing voice or create new
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  if (!showWizard && !showOutput) {
+    return (
+      <div className="max-w-2xl mx-auto animate-in fade-in duration-300">
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap'); .font-modern { font-family: 'Sora', sans-serif; }`}</style>
+
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 font-modern">Voice & Intent</h1>
+          <p className="text-gray-500 font-modern mt-1">Create your personalized LinkedIn voice</p>
+        </div>
+
+        {/* If user has an existing voice */}
+        {config.approved && config.toneName ? (
+          <div className="space-y-6">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white overflow-hidden">
+              <CardContent className="p-6 relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-white/70 text-xs uppercase tracking-wider font-modern">Active Voice</span>
+                  </div>
+                  <h2 className="text-3xl font-bold font-modern">{config.toneName}</h2>
+                  <p className="text-white/80 font-modern text-sm mt-2 line-clamp-2">
+                    {config.toneManifesto?.split('\n')[0]}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-3">
+              <Button onClick={() => setShowOutput(true)} className="flex-1 font-modern h-12">
+                <Target className="h-4 w-4 mr-2" />
+                View Full Voice
+              </Button>
+              <Button onClick={editVoice} variant="outline" className="font-modern h-12 px-6">
+                <Edit3 className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </div>
+
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex flex-wrap gap-2">
+                  {config.targetAudience.slice(0, 3).map((a, i) => (
+                    <span key={i} className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-modern">{a}</span>
+                  ))}
+                  {config.primaryGoal.slice(0, 2).map((g, i) => (
+                    <span key={i} className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-modern">{g}</span>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          /* No voice yet - show create prompt */
+          <Card className="border-2 border-dashed border-gray-200">
+            <CardContent className="p-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 font-modern mb-2">Create Your Voice</h3>
+              <p className="text-gray-500 font-modern mb-6 max-w-sm mx-auto">
+                Build a personalized voice system that AI will use to generate content that sounds like you.
+              </p>
+              <Button onClick={startNewVoice} className="font-modern h-12 px-8">
+                Get Started
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }
@@ -431,7 +527,7 @@ export default function VoicePage() {
             <h1 className="text-2xl font-bold text-gray-900 font-modern">Your Voice System</h1>
             <p className="text-gray-500 font-modern text-sm mt-1">AI will use this for all content</p>
           </div>
-          <Button onClick={() => setShowOutput(false)} variant="outline" size="sm" className="font-modern">
+          <Button onClick={editVoice} variant="outline" size="sm" className="font-modern">
             <Edit3 className="h-4 w-4 mr-2" /> Edit
           </Button>
         </div>
@@ -963,8 +1059,14 @@ export default function VoicePage() {
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // MAIN RENDER
+  // MAIN RENDER (WIZARD)
   // ═══════════════════════════════════════════════════════════════════════════
+
+  // If we're here, we're in the wizard mode
+  if (!showWizard) {
+    // Fallback - shouldn't happen but just in case
+    return null;
+  }
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
@@ -972,8 +1074,21 @@ export default function VoicePage() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 font-modern">Voice & Intent System</h1>
-        <p className="text-gray-500 font-modern mt-1">Build your personal LinkedIn voice</p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowWizard(false)} 
+            className="text-gray-500 hover:text-gray-700 font-modern"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 font-modern">Voice & Intent System</h1>
+            <p className="text-gray-500 font-modern text-sm mt-0.5">Build your personal LinkedIn voice</p>
+          </div>
+        </div>
       </div>
 
       {/* Part Progress */}

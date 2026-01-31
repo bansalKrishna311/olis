@@ -36,7 +36,7 @@ const navItems = [
     locked: false 
   },
   { 
-    label: "Posts", 
+    label: "Create Post", 
     href: "/dashboard/posts", 
     icon: FileText,
     locked: false 
