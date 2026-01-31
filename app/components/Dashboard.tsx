@@ -1,9 +1,10 @@
 "use client";
 
+import { useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { ProfileData } from "./ProfileSetup";
-import type { PostData } from "./PostHistorySetup";
+import type { ProfileData, PostData, AnalysisDepth, NextAction } from "@/lib/types";
+import { DASHBOARD_STYLES, LockIcon } from "./shared";
 
 interface DashboardProps {
   profileData?: ProfileData;
@@ -12,81 +13,90 @@ interface DashboardProps {
   onEditProfile?: () => void;
 }
 
+const MINIMUM_POSTS_FOR_VOICE = 3;
+const MINIMUM_POSTS_FOR_PATTERNS = 5;
+
 export default function Dashboard({
   profileData,
   posts = [],
   onAddPosts,
   onEditProfile,
 }: DashboardProps) {
-  // Compute analysis depth
-  const getAnalysisDepth = (): { level: string; color: string } => {
-    if (posts.length >= 5) {
+  const analysisDepth = useMemo((): AnalysisDepth => {
+    if (posts.length >= MINIMUM_POSTS_FOR_PATTERNS) {
       return { level: "Strong", color: "text-green-600" };
-    } else if (posts.length >= 3) {
+    } else if (posts.length >= MINIMUM_POSTS_FOR_VOICE) {
       return { level: "Partial", color: "text-amber-600" };
-    } else {
-      return { level: "Limited", color: "text-gray-500" };
     }
-  };
+    return { level: "Limited", color: "text-gray-500" };
+  }, [posts.length]);
 
-  // Compute today's focus (rule-based)
-  const getTodaysFocus = (): string => {
+  const todaysFocus = useMemo((): string => {
     if (posts.length === 0) {
       return "Add at least 3 posts to unlock voice analysis";
-    } else if (posts.length < 3) {
-      return `Add ${3 - posts.length} more post${3 - posts.length > 1 ? "s" : ""} to unlock voice analysis`;
-    } else if (posts.length < 5) {
-      return `Add ${5 - posts.length} more post${5 - posts.length > 1 ? "s" : ""} to strengthen content patterns`;
-    } else {
-      return "Review your profile summary for clarity";
+    } else if (posts.length < MINIMUM_POSTS_FOR_VOICE) {
+      const remaining = MINIMUM_POSTS_FOR_VOICE - posts.length;
+      return `Add ${remaining} more post${remaining > 1 ? "s" : ""} to unlock voice analysis`;
+    } else if (posts.length < MINIMUM_POSTS_FOR_PATTERNS) {
+      const remaining = MINIMUM_POSTS_FOR_PATTERNS - posts.length;
+      return `Add ${remaining} more post${remaining > 1 ? "s" : ""} to strengthen content patterns`;
     }
-  };
+    return "Review your profile summary for clarity";
+  }, [posts.length]);
 
-  // Compute next best action (single action only)
-  const getNextAction = (): { label: string; action: "add-posts" | "edit-profile" | "view-insights"; locked: boolean } => {
-    if (posts.length < 3) {
+  const nextAction = useMemo((): NextAction => {
+    if (posts.length < MINIMUM_POSTS_FOR_VOICE) {
       return { label: "Add posts", action: "add-posts", locked: false };
-    } else if (posts.length < 5) {
+    } else if (posts.length < MINIMUM_POSTS_FOR_PATTERNS) {
       return { label: "Add more posts", action: "add-posts", locked: false };
-    } else {
-      return { label: "View insights", action: "view-insights", locked: true };
     }
-  };
+    return { label: "View insights", action: "view-insights", locked: true };
+  }, [posts.length]);
 
-  const analysisDepth = getAnalysisDepth();
-  const todaysFocus = getTodaysFocus();
-  const nextAction = getNextAction();
+  const observations = useMemo(() => {
+    const obs: string[] = [];
 
-  const handleNextAction = () => {
+    if (posts.length < MINIMUM_POSTS_FOR_VOICE) {
+      obs.push("You haven't shared enough posts to analyze tone");
+    } else if (posts.length < MINIMUM_POSTS_FOR_PATTERNS) {
+      obs.push("Voice analysis is available but pattern detection needs more data");
+    }
+
+    const longPosts = posts.filter((p) => p.content.length > 500);
+    if (longPosts.length > posts.length / 2) {
+      obs.push("Your posts are mostly long-form");
+    }
+
+    const shortPosts = posts.filter((p) => p.content.length < 200);
+    if (shortPosts.length > posts.length / 2) {
+      obs.push("Your posts are mostly short-form");
+    }
+
+    const featuredPosts = posts.filter((p) => p.isFeatured);
+    if (featuredPosts.length === 0 && posts.length > 0) {
+      obs.push("No featured posts marked — consider highlighting your best work");
+    } else if (featuredPosts.length > 0) {
+      obs.push(
+        `${featuredPosts.length} post${featuredPosts.length > 1 ? "s" : ""} marked as featured`
+      );
+    }
+
+    return obs;
+  }, [posts]);
+
+  const handleNextAction = useCallback(() => {
     if (nextAction.action === "add-posts") {
       onAddPosts?.();
     } else if (nextAction.action === "edit-profile") {
       onEditProfile?.();
     }
-    // view-insights is locked, do nothing
-  };
+  }, [nextAction.action, onAddPosts, onEditProfile]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
+      <style>{DASHBOARD_STYLES}</style>
 
-        .font-modern {
-          font-family: 'Sora', sans-serif;
-        }
-
-        @keyframes fadeInUp {
-          0% { opacity: 0; transform: translateY(24px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in-1 { animation: fadeInUp 0.5s ease-out 0.1s forwards; opacity: 0; }
-        .fade-in-2 { animation: fadeInUp 0.5s ease-out 0.2s forwards; opacity: 0; }
-        .fade-in-3 { animation: fadeInUp 0.5s ease-out 0.3s forwards; opacity: 0; }
-        .fade-in-4 { animation: fadeInUp 0.5s ease-out 0.4s forwards; opacity: 0; }
-      `}</style>
-
-      {/* Simple header */}
+      {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <span className="text-lg font-semibold font-modern text-gray-900">OLIS</span>
@@ -94,56 +104,44 @@ export default function Dashboard({
         </div>
       </header>
 
-      {/* Main content */}
+      {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
-          {/* Block 1 — Current Status */}
+          {/* Current Status */}
           <Card className="fade-in-1 border-0 shadow-sm">
             <CardHeader className="pb-2">
-              <h2 className="text-sm font-medium text-gray-500 font-modern uppercase tracking-wide">
-                Current Status
-              </h2>
+              <SectionTitle>Current Status</SectionTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600 font-modern">Profile</span>
-                <span className="text-sm font-medium text-green-600 font-modern">Imported</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600 font-modern">Posts</span>
-                <span className="text-sm font-medium text-gray-700 font-modern">
-                  {posts.length} / 5 added
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-gray-600 font-modern">Analysis depth</span>
-                <span className={`text-sm font-medium font-modern ${analysisDepth.color}`}>
-                  {analysisDepth.level}
-                </span>
-              </div>
+              <StatusRow label="Profile" value="Imported" valueColor="text-green-600" />
+              <StatusRow
+                label="Posts"
+                value={`${posts.length} / 5 added`}
+                hasBorder
+              />
+              <StatusRow
+                label="Analysis depth"
+                value={analysisDepth.level}
+                valueColor={analysisDepth.color}
+                hasBorder={false}
+              />
             </CardContent>
           </Card>
 
-          {/* Block 2 — Today's Focus */}
+          {/* Today's Focus */}
           <Card className="fade-in-2 border-0 shadow-sm bg-blue-50/50">
             <CardHeader className="pb-2">
-              <h2 className="text-sm font-medium text-gray-500 font-modern uppercase tracking-wide">
-                Today's Focus
-              </h2>
+              <SectionTitle>Today&apos;s Focus</SectionTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-base text-gray-800 font-modern">
-                {todaysFocus}
-              </p>
+              <p className="text-base text-gray-800 font-modern">{todaysFocus}</p>
             </CardContent>
           </Card>
 
-          {/* Block 3 — Next Best Action */}
+          {/* Next Best Action */}
           <Card className="fade-in-3 border-0 shadow-sm">
             <CardHeader className="pb-2">
-              <h2 className="text-sm font-medium text-gray-500 font-modern uppercase tracking-wide">
-                Next Best Action
-              </h2>
+              <SectionTitle>Next Best Action</SectionTitle>
             </CardHeader>
             <CardContent>
               <Button
@@ -153,12 +151,7 @@ export default function Dashboard({
                 size="lg"
               >
                 {nextAction.label}
-                {nextAction.locked && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
-                )}
+                {nextAction.locked && <LockIcon className="ml-2" />}
               </Button>
               {nextAction.locked && (
                 <p className="text-xs text-gray-500 font-modern text-center mt-2">
@@ -168,61 +161,58 @@ export default function Dashboard({
             </CardContent>
           </Card>
 
-          {/* Rule-based observations (placeholder for Step 4) */}
+          {/* Observations */}
           {posts.length > 0 && (
             <Card className="fade-in-4 border-0 shadow-sm bg-gray-50">
               <CardHeader className="pb-2">
-                <h2 className="text-sm font-medium text-gray-500 font-modern uppercase tracking-wide">
-                  Observations
-                </h2>
+                <SectionTitle>Observations</SectionTitle>
                 <p className="text-xs text-gray-400 font-modern">
                   Rule-based observations (no AI yet)
                 </p>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm text-gray-600 font-modern">
-                  {posts.length < 3 && (
-                    <li className="flex items-start gap-2">
+                  {observations.map((obs, index) => (
+                    <li key={index} className="flex items-start gap-2">
                       <span className="text-gray-400">•</span>
-                      <span>You haven't shared enough posts to analyze tone</span>
+                      <span>{obs}</span>
                     </li>
-                  )}
-                  {posts.length >= 3 && posts.length < 5 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-gray-400">•</span>
-                      <span>Voice analysis is available but pattern detection needs more data</span>
-                    </li>
-                  )}
-                  {posts.filter(p => p.content.length > 500).length > posts.length / 2 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-gray-400">•</span>
-                      <span>Your posts are mostly long-form</span>
-                    </li>
-                  )}
-                  {posts.filter(p => p.content.length < 200).length > posts.length / 2 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-gray-400">•</span>
-                      <span>Your posts are mostly short-form</span>
-                    </li>
-                  )}
-                  {posts.filter(p => p.isFeatured).length === 0 && posts.length > 0 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-gray-400">•</span>
-                      <span>No featured posts marked — consider highlighting your best work</span>
-                    </li>
-                  )}
-                  {posts.filter(p => p.isFeatured).length > 0 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-gray-400">•</span>
-                      <span>{posts.filter(p => p.isFeatured).length} post{posts.filter(p => p.isFeatured).length > 1 ? "s" : ""} marked as featured</span>
-                    </li>
-                  )}
+                  ))}
                 </ul>
               </CardContent>
             </Card>
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+// Helper components
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-sm font-medium text-gray-500 font-modern uppercase tracking-wide">
+      {children}
+    </h2>
+  );
+}
+
+interface StatusRowProps {
+  label: string;
+  value: string;
+  valueColor?: string;
+  hasBorder?: boolean;
+}
+
+function StatusRow({ label, value, valueColor = "text-gray-700", hasBorder = true }: StatusRowProps) {
+  return (
+    <div
+      className={`flex items-center justify-between py-2 ${
+        hasBorder ? "border-b border-gray-100" : ""
+      }`}
+    >
+      <span className="text-sm text-gray-600 font-modern">{label}</span>
+      <span className={`text-sm font-medium font-modern ${valueColor}`}>{value}</span>
     </div>
   );
 }

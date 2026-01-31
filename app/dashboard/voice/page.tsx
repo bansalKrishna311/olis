@@ -10,8 +10,6 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Plus,
-  X,
   Target,
   Users,
   MessageSquare,
@@ -23,57 +21,19 @@ import {
   Edit3,
   RotateCcw,
   AlertCircle,
+  X,
 } from "lucide-react";
+import type { VoiceConfig as VoiceConfigType } from "@/lib/types";
+import { STORAGE_KEYS, getStorageItem, setStorageItem, removeStorageItem } from "@/lib/storage";
+import { DASHBOARD_PAGE_STYLES, Chip, ChipSelector } from "../shared";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TYPES & CONSTANTS
+// LOCAL VOICE CONFIG TYPE (Extended with additional fields)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const STORAGE_KEY = "olis_voice_config";
-
-interface VoiceConfig {
-  primaryGoal: string[];
-  customPrimaryGoal: string[];
-  secondaryGoals: string[];
-  targetAudience: string[];
-  customAudience: string[];
-  audienceSeniority: string[];
-  audienceAwareness: string[];
-  audienceRelationship: string[];
-  desiredReactions: string[];
-  customReactions: string[];
-  thinkingStyle: string[];
-  customThinkingStyle: string[];
-  problemOrientation: string[];
+interface VoiceConfig extends VoiceConfigType {
+  // Additional UI-specific fields not in shared types
   contentIntentRatio: { educate: number; inspire: number; entertain: number; promote: number; engage: number };
-  emotionalBaseline: string[];
-  energyLevel: string[];
-  authorityExpression: string[];
-  vulnerabilityLevel: string[];
-  formality: string[];
-  languageComplexity: string[];
-  sentenceRhythm: string[];
-  hookPreference: string[];
-  customHookPreference: string[];
-  ctaStyle: string[];
-  opinionStrength: string[];
-  identityStatement: string;
-  egoCalibration: string[];
-  authenticityPreference: string[];
-  culturalContext: string[];
-  customCulturalContext: string[];
-  careerStage: string[];
-  riskTolerance: string[];
-  frequencyExpectation: string[];
-  antiVoiceRules: string[];
-  customAntiVoiceRules: string[];
-  comparisonSensitivity: string[];
-  consistencyRule: string[];
-  toneName: string;
-  toneManifesto: string;
-  doRules: string[];
-  dontRules: string[];
-  approved: boolean;
 }
 
 const DEFAULT_CONFIG: VoiceConfig = {
@@ -190,114 +150,6 @@ const PART_INFO: Record<number, { name: string; color: string }> = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CHIP COMPONENTS
-// ═══════════════════════════════════════════════════════════════════════════
-
-interface ChipProps {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-  variant?: "default" | "danger";
-}
-
-function Chip({ label, selected, onClick, variant = "default" }: ChipProps) {
-  const colorClasses = variant === "danger"
-    ? selected
-      ? "bg-red-50 border-red-400 text-red-700 shadow-sm"
-      : "bg-white border-gray-200 text-gray-600 hover:border-red-300 hover:bg-red-50/50"
-    : selected
-      ? "bg-blue-50 border-blue-400 text-blue-700 shadow-sm"
-      : "bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50/50";
-
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${colorClasses}`}
-    >
-      {label}
-      {selected && <Check className="h-3.5 w-3.5" />}
-    </button>
-  );
-}
-
-interface ChipSelectorProps {
-  options: string[];
-  selected: string[];
-  onToggle: (value: string) => void;
-  customValues?: string[];
-  onAddCustom?: (value: string) => void;
-  onRemoveCustom?: (value: string) => void;
-  variant?: "default" | "danger";
-}
-
-function ChipSelector({
-  options,
-  selected,
-  onToggle,
-  customValues = [],
-  onAddCustom,
-  onRemoveCustom,
-  variant = "default",
-}: ChipSelectorProps) {
-  const [customInput, setCustomInput] = useState("");
-
-  const handleAddCustom = () => {
-    if (customInput.trim() && onAddCustom && !customValues.includes(customInput.trim())) {
-      onAddCustom(customInput.trim());
-      setCustomInput("");
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <Chip
-            key={option}
-            label={option}
-            selected={selected.includes(option)}
-            onClick={() => onToggle(option)}
-            variant={variant}
-          />
-        ))}
-        {customValues.map((value) => (
-          <span
-            key={value}
-            className={`px-3 py-1.5 rounded-full border text-sm font-medium flex items-center gap-1.5 ${
-              variant === "danger"
-                ? "bg-red-50 border-red-400 text-red-700"
-                : "bg-blue-50 border-blue-400 text-blue-700"
-            }`}
-          >
-            {value}
-            <Check className="h-3.5 w-3.5" />
-            {onRemoveCustom && (
-              <button onClick={() => onRemoveCustom(value)} className="ml-0.5 hover:opacity-60">
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </span>
-        ))}
-      </div>
-      {onAddCustom && (
-        <div className="flex gap-2 max-w-xs">
-          <Input
-            value={customInput}
-            onChange={(e) => setCustomInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddCustom()}
-            placeholder="Add your own..."
-            className="h-9 text-sm"
-          />
-          <Button onClick={handleAddCustom} size="sm" variant="outline" className="h-9 px-3">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -309,15 +161,10 @@ export default function VoicePage() {
   const [showWizard, setShowWizard] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setConfig({ ...DEFAULT_CONFIG, ...parsed });
-        if (parsed.approved) setShowOutput(true);
-      } catch {
-        // Use default
-      }
+    const parsed = getStorageItem<VoiceConfig | null>(STORAGE_KEYS.voiceConfig, null);
+    if (parsed) {
+      setConfig({ ...DEFAULT_CONFIG, ...parsed });
+      if (parsed.approved) setShowOutput(true);
     }
     setIsHydrated(true);
   }, []);
@@ -332,7 +179,7 @@ export default function VoicePage() {
   const saveConfig = (updates: Partial<VoiceConfig>) => {
     const newConfig = { ...config, ...updates };
     setConfig(newConfig);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
+    setStorageItem(STORAGE_KEYS.voiceConfig, newConfig);
   };
 
   const toggleValue = (field: keyof VoiceConfig, value: string) => {
@@ -407,7 +254,7 @@ export default function VoicePage() {
   const resetVoice = () => {
     if (confirm("Reset voice configuration? This cannot be undone.")) {
       setConfig(DEFAULT_CONFIG);
-      localStorage.removeItem(STORAGE_KEY);
+      removeStorageItem(STORAGE_KEYS.voiceConfig);
       setCurrentStep(0);
       setShowOutput(false);
       setShowWizard(false);
@@ -439,7 +286,7 @@ export default function VoicePage() {
   if (!showWizard && !showOutput) {
     return (
       <div className="max-w-2xl mx-auto animate-in fade-in duration-300">
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap'); .font-modern { font-family: 'Sora', sans-serif; }`}</style>
+        <style>{DASHBOARD_PAGE_STYLES}</style>
 
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 font-modern">Voice & Intent</h1>
@@ -520,7 +367,7 @@ export default function VoicePage() {
   if (showOutput && config.toneName) {
     return (
       <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap'); .font-modern { font-family: 'Sora', sans-serif; }`}</style>
+        <style>{DASHBOARD_PAGE_STYLES}</style>
 
         <div className="flex items-center justify-between">
           <div>
@@ -1070,7 +917,7 @@ export default function VoicePage() {
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap'); .font-modern { font-family: 'Sora', sans-serif; }`}</style>
+      <style>{DASHBOARD_PAGE_STYLES}</style>
 
       {/* Header */}
       <div className="mb-8">

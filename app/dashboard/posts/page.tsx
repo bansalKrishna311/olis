@@ -29,53 +29,15 @@ import {
   Heart,
   BookOpen,
 } from "lucide-react";
-
-// ═══════════════════════════════════════════════════════════════════════════
-// TYPES
-// ═══════════════════════════════════════════════════════════════════════════
-
-interface VoiceConfig {
-  toneName: string;
-  toneManifesto: string;
-  hookPreference: string[];
-  ctaStyle: string[];
-  emotionalBaseline: string[];
-  formality: string[];
-  approved: boolean;
-}
-
-interface SavedVoice {
-  id: string;
-  name: string;
-  description: string;
-  hookStyle: string;
-  ctaStyle: string;
-  isPreset?: boolean;
-}
-
-interface PostIdea {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  createdAt: string;
-}
-
-interface ScheduledPost {
-  id: string;
-  day: number;
-  title: string;
-  category: string;
-  status: "draft" | "scheduled" | "posted";
-}
-
-interface ContentStrategy {
-  id: string;
-  name: string;
-  duration: number;
-  posts: ScheduledPost[];
-  createdAt: string;
-}
+import type {
+  VoiceConfig,
+  SavedVoice,
+  PostIdea,
+  ScheduledPost,
+  ContentStrategy,
+} from "@/lib/types";
+import { STORAGE_KEYS, getStorageItem, setStorageItem } from "@/lib/storage";
+import { DASHBOARD_PAGE_STYLES, LoadingSpinner, PageHeader } from "../shared";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PRESET VOICES (Generic LinkedIn Templates)
@@ -88,7 +50,6 @@ const PRESET_VOICES: SavedVoice[] = [
     description: "For wins, awards, hackathons, competitions. Bold and celebratory.",
     hookStyle: "Bold statement",
     ctaStyle: "Thought-provoking question",
-    isPreset: true,
   },
   {
     id: "preset-learning",
@@ -96,7 +57,6 @@ const PRESET_VOICES: SavedVoice[] = [
     description: "For sharing lessons, insights, and growth moments. Reflective and genuine.",
     hookStyle: "Story opener",
     ctaStyle: "Soft ask",
-    isPreset: true,
   },
   {
     id: "preset-milestone",
@@ -193,37 +153,18 @@ export default function CreatePostPage() {
   useEffect(() => {
     const loadData = () => {
       // Load user's Voice & Intent
-      const voiceData = localStorage.getItem("olis_voice_config");
-      if (voiceData) {
-        try {
-          const parsed = JSON.parse(voiceData);
-          if (parsed.approved) {
-            setUserVoice(parsed);
-          }
-        } catch {
-          // Ignore parse errors
-        }
+      const voiceData = getStorageItem<VoiceConfig | null>(STORAGE_KEYS.voiceConfig, null);
+      if (voiceData?.approved) {
+        setUserVoice(voiceData);
       }
       
       // Load ideas
-      const savedIdeas = localStorage.getItem("olis_post_ideas");
-      if (savedIdeas) {
-        try { 
-          setIdeas(JSON.parse(savedIdeas)); 
-        } catch {
-          // Ignore parse errors
-        }
-      }
+      const savedIdeas = getStorageItem<PostIdea[]>(STORAGE_KEYS.postIdeas, []);
+      setIdeas(savedIdeas);
       
       // Load strategies
-      const savedStrategies = localStorage.getItem("olis_content_strategies");
-      if (savedStrategies) {
-        try { 
-          setStrategies(JSON.parse(savedStrategies)); 
-        } catch {
-          // Ignore parse errors
-        }
-      }
+      const savedStrategies = getStorageItem<ContentStrategy[]>(STORAGE_KEYS.contentStrategies, []);
+      setStrategies(savedStrategies);
       
       setIsHydrated(true);
     };
@@ -337,7 +278,7 @@ export default function CreatePostPage() {
     };
     const updated = [...ideas, idea];
     setIdeas(updated);
-    localStorage.setItem("olis_post_ideas", JSON.stringify(updated));
+    setStorageItem(STORAGE_KEYS.postIdeas, updated);
     setNewIdeaTitle("");
     setNewIdeaDesc("");
     setShowIdeaForm(false);
@@ -347,7 +288,7 @@ export default function CreatePostPage() {
   const deleteIdea = (id: string) => {
     const updated = ideas.filter(i => i.id !== id);
     setIdeas(updated);
-    localStorage.setItem("olis_post_ideas", JSON.stringify(updated));
+    setStorageItem(STORAGE_KEYS.postIdeas, updated);
   };
 
   // Apply idea to post creation
@@ -384,7 +325,7 @@ export default function CreatePostPage() {
     
     const updated = [...strategies, strategy];
     setStrategies(updated);
-    localStorage.setItem("olis_content_strategies", JSON.stringify(updated));
+    setStorageItem(STORAGE_KEYS.contentStrategies, updated);
     setActiveStrategy(strategy);
     setShowStrategyCreator(false);
     setStrategyName("");
@@ -400,7 +341,7 @@ export default function CreatePostPage() {
       return s;
     });
     setStrategies(updated);
-    localStorage.setItem("olis_content_strategies", JSON.stringify(updated));
+    setStorageItem(STORAGE_KEYS.contentStrategies, updated);
     if (activeStrategy?.id === strategyId) {
       setActiveStrategy(updated.find(s => s.id === strategyId) || null);
     }
@@ -410,7 +351,7 @@ export default function CreatePostPage() {
   const deleteStrategy = (id: string) => {
     const updated = strategies.filter(s => s.id !== id);
     setStrategies(updated);
-    localStorage.setItem("olis_content_strategies", JSON.stringify(updated));
+    setStorageItem(STORAGE_KEYS.contentStrategies, updated);
     if (activeStrategy?.id === id) setActiveStrategy(null);
   };
 
@@ -424,34 +365,19 @@ export default function CreatePostPage() {
   } : null;
 
   if (!isHydrated) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="space-y-8">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
-        .font-modern { font-family: 'Sora', sans-serif; }
-        @keyframes fadeInUp {
-          0% { opacity: 0; transform: translateY(16px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in-1 { animation: fadeInUp 0.4s ease-out 0.1s forwards; opacity: 0; }
-        .fade-in-2 { animation: fadeInUp 0.4s ease-out 0.2s forwards; opacity: 0; }
-        .fade-in-3 { animation: fadeInUp 0.4s ease-out 0.3s forwards; opacity: 0; }
-      `}</style>
+      <style>{DASHBOARD_PAGE_STYLES}</style>
 
       {/* Header */}
-      <div className="fade-in-1">
-        <h1 className="text-2xl font-bold text-gray-900 font-modern">Create Post</h1>
-        <p className="text-gray-500 font-modern text-sm mt-1">
-          Generate LinkedIn posts using your Voice & Intent
-        </p>
-      </div>
+      <PageHeader
+        title="Create Post"
+        description="Generate LinkedIn posts using your Voice & Intent"
+        className="fade-in-1"
+      />
 
       {/* Tabs */}
       <div className="fade-in-1 flex gap-1 p-1 bg-gray-100 rounded-lg w-fit">

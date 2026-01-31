@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { 
-  AlertTriangle, 
-  Save, 
-  User, 
-  Briefcase, 
+import {
+  AlertTriangle,
+  Save,
+  User,
+  Briefcase,
   GraduationCap,
   Award,
   Globe,
@@ -20,38 +20,21 @@ import {
   Phone,
   MapPin,
   Building,
-  Link,
   FileText,
   ChevronDown,
   ChevronUp,
   Plus,
-  Trash2
+  Trash2,
 } from "lucide-react";
-import type { ProfileData } from "../../components/ProfileSetup";
-
-// Storage keys
-const STORAGE_KEYS = {
-  profile: "olis_profile_data",
-  posts: "olis_posts_data",
-  onboardingComplete: "olis_onboarding_complete",
-};
-
-// Helper to safely parse JSON from localStorage
-function safeJsonParse<T>(value: string | null, fallback: T): T {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
-}
+import type { ProfileData } from "@/lib/types";
+import { STORAGE_KEYS, setStorageItem, clearAllStorageData } from "@/lib/storage";
+import { DASHBOARD_PAGE_STYLES, LoadingSpinner, useProfileData } from "../shared";
 
 type ExpandedSection = "basic" | "experience" | "education" | "skills" | "contact" | "other" | null;
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const { isHydrated, profileData, setProfileData } = useProfileData();
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [expandedSection, setExpandedSection] = useState<ExpandedSection>("basic");
@@ -73,36 +56,29 @@ export default function SettingsPage() {
   const [languages, setLanguages] = useState<ProfileData["languages"]>([]);
   const [certifications, setCertifications] = useState<ProfileData["certifications"]>([]);
 
+  // Initialize form fields when profile data loads
   useEffect(() => {
-    const savedProfile = safeJsonParse<ProfileData | null>(
-      localStorage.getItem(STORAGE_KEYS.profile),
-      null
-    );
-    
-    if (savedProfile) {
-      setProfileData(savedProfile);
-      setHeadline(savedProfile.headline || "");
-      setSummary(savedProfile.summary || "");
-      setLocation(savedProfile.location || "");
-      setIndustry(savedProfile.industry || "");
-      setCurrentPosition(savedProfile.currentPosition || "");
-      setCurrentCompany(savedProfile.currentCompany || "");
-      setExperience(savedProfile.experience || []);
-      setEducation(savedProfile.education || []);
-      setSkills(savedProfile.skills || []);
-      setEmail(savedProfile.email || "");
-      setPhone(savedProfile.phone || "");
-      setWebsite(savedProfile.website || "");
-      setLanguages(savedProfile.languages || []);
-      setCertifications(savedProfile.certifications || []);
+    if (profileData) {
+      setHeadline(profileData.headline || "");
+      setSummary(profileData.summary || "");
+      setLocation(profileData.location || "");
+      setIndustry(profileData.industry || "");
+      setCurrentPosition(profileData.currentPosition || "");
+      setCurrentCompany(profileData.currentCompany || "");
+      setExperience(profileData.experience || []);
+      setEducation(profileData.education || []);
+      setSkills(profileData.skills || []);
+      setEmail(profileData.email || "");
+      setPhone(profileData.phone || "");
+      setWebsite(profileData.website || "");
+      setLanguages(profileData.languages || []);
+      setCertifications(profileData.certifications || []);
     }
-
-    setIsHydrated(true);
-  }, []);
+  }, [profileData]);
 
   const handleSave = () => {
     setIsSaving(true);
-    
+
     const updatedProfile: ProfileData = {
       ...profileData,
       name: profileData?.name || profileData?.fullName || "",
@@ -126,9 +102,9 @@ export default function SettingsPage() {
       certifications,
     };
 
-    localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(updatedProfile));
+    setStorageItem(STORAGE_KEYS.profile, updatedProfile);
     setProfileData(updatedProfile);
-    
+
     setTimeout(() => {
       setIsSaving(false);
       setSaved(true);
@@ -138,24 +114,24 @@ export default function SettingsPage() {
 
   const handleResetData = () => {
     if (confirm("Are you sure you want to reset all data? This will clear your profile and posts and take you back to onboarding.")) {
-      localStorage.removeItem(STORAGE_KEYS.profile);
-      localStorage.removeItem(STORAGE_KEYS.posts);
-      localStorage.removeItem(STORAGE_KEYS.onboardingComplete);
-      localStorage.removeItem("olis_current_step");
+      clearAllStorageData();
       router.push("/onboarding");
     }
   };
 
   const addExperience = () => {
-    setExperience([...(experience || []), {
-      title: "",
-      company: "",
-      location: "",
-      startDate: "",
-      endDate: "",
-      current: false,
-      description: ""
-    }]);
+    setExperience([
+      ...(experience || []),
+      {
+        title: "",
+        company: "",
+        location: "",
+        startDate: "",
+        endDate: "",
+        current: false,
+        description: "",
+      },
+    ]);
   };
 
   const updateExperience = (index: number, field: string, value: string | boolean) => {
@@ -169,14 +145,17 @@ export default function SettingsPage() {
   };
 
   const addEducation = () => {
-    setEducation([...(education || []), {
-      school: "",
-      degree: "",
-      field: "",
-      startYear: "",
-      endYear: "",
-      description: ""
-    }]);
+    setEducation([
+      ...(education || []),
+      {
+        school: "",
+        degree: "",
+        field: "",
+        startYear: "",
+        endYear: "",
+        description: "",
+      },
+    ]);
   };
 
   const updateEducation = (index: number, field: string, value: string) => {
@@ -197,15 +176,11 @@ export default function SettingsPage() {
   };
 
   const removeSkill = (skill: string) => {
-    setSkills(skills.filter(s => s !== skill));
+    setSkills(skills.filter((s) => s !== skill));
   };
 
   if (!isHydrated) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   const toggleSection = (section: ExpandedSection) => {
@@ -214,13 +189,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
-
-        .font-modern {
-          font-family: 'Sora', sans-serif;
-        }
-      `}</style>
+      <style>{DASHBOARD_PAGE_STYLES}</style>
 
       {/* Page header */}
       <div className="flex items-center justify-between">

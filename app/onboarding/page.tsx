@@ -2,31 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { ProfileData, PostData, OnboardingStep } from "@/lib/types";
+import {
+  STORAGE_KEYS,
+  getStorageItem,
+  setStorageItem,
+  isOnboardingComplete,
+  setOnboardingComplete,
+} from "@/lib/storage";
 import WelcomeAnimation from "../components/WelcomeAnimation";
-import ProfileSetup, { type ProfileData } from "../components/ProfileSetup";
-import PostHistorySetup, { type PostData } from "../components/PostHistorySetup";
+import ProfileSetup from "../components/ProfileSetup";
+import PostHistorySetup from "../components/PostHistorySetup";
 import ConfirmationScreen from "../components/ConfirmationScreen";
 import OrientationScreen from "../components/OrientationScreen";
-
-type OnboardingStep = "welcome" | "profile-setup" | "post-history" | "confirmation" | "orientation";
-
-// Storage keys
-const STORAGE_KEYS = {
-  step: "olis_current_step",
-  profile: "olis_profile_data",
-  posts: "olis_posts_data",
-  onboardingComplete: "olis_onboarding_complete",
-};
-
-// Helper to safely parse JSON from localStorage
-function safeJsonParse<T>(value: string | null, fallback: T): T {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
-}
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -37,22 +25,15 @@ export default function OnboardingPage() {
 
   // Check if onboarding is already complete, redirect to dashboard
   useEffect(() => {
-    const onboardingComplete = localStorage.getItem(STORAGE_KEYS.onboardingComplete) === "true";
-    if (onboardingComplete) {
+    if (isOnboardingComplete()) {
       router.push("/dashboard");
       return;
     }
 
     // Load persisted state
-    const savedStep = localStorage.getItem(STORAGE_KEYS.step) as OnboardingStep | null;
-    const savedProfile = safeJsonParse<ProfileData | null>(
-      localStorage.getItem(STORAGE_KEYS.profile),
-      null
-    );
-    const savedPosts = safeJsonParse<PostData[]>(
-      localStorage.getItem(STORAGE_KEYS.posts),
-      []
-    );
+    const savedStep = getStorageItem<OnboardingStep>(STORAGE_KEYS.step, "welcome");
+    const savedProfile = getStorageItem<ProfileData | null>(STORAGE_KEYS.profile, null);
+    const savedPosts = getStorageItem<PostData[]>(STORAGE_KEYS.posts, []);
 
     if (savedProfile) {
       setProfileData({ ...savedProfile, pdfFile: null });
@@ -70,7 +51,7 @@ export default function OnboardingPage() {
   // Persist step changes
   useEffect(() => {
     if (!isHydrated) return;
-    localStorage.setItem(STORAGE_KEYS.step, currentStep);
+    setStorageItem(STORAGE_KEYS.step, currentStep);
   }, [currentStep, isHydrated]);
 
   // Persist profile data changes
@@ -78,14 +59,14 @@ export default function OnboardingPage() {
     if (!isHydrated) return;
     if (profileData) {
       const dataToStore = { ...profileData, pdfFile: null };
-      localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(dataToStore));
+      setStorageItem(STORAGE_KEYS.profile, dataToStore);
     }
   }, [profileData, isHydrated]);
 
   // Persist posts changes
   useEffect(() => {
     if (!isHydrated) return;
-    localStorage.setItem(STORAGE_KEYS.posts, JSON.stringify(posts));
+    setStorageItem(STORAGE_KEYS.posts, posts);
   }, [posts, isHydrated]);
 
   const handleAnimationComplete = () => {
@@ -107,7 +88,7 @@ export default function OnboardingPage() {
   };
 
   const handleOrientationComplete = () => {
-    localStorage.setItem(STORAGE_KEYS.onboardingComplete, "true");
+    setOnboardingComplete();
     router.push("/dashboard");
   };
 
@@ -115,7 +96,7 @@ export default function OnboardingPage() {
   if (!isHydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
       </div>
     );
   }

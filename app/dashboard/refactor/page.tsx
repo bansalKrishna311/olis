@@ -6,99 +6,57 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Sparkles, 
-  Check, 
-  Edit3, 
+import {
+  Sparkles,
+  Check,
+  Edit3,
   Target,
   Briefcase,
   User,
   Lightbulb,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
 } from "lucide-react";
-import type { ProfileData } from "../../components/ProfileSetup";
-
-// Storage keys
-const STORAGE_KEYS = {
-  profile: "olis_profile_data",
-};
-
-// Helper to safely parse JSON from localStorage
-function safeJsonParse<T>(value: string | null, fallback: T): T {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
-}
+import type { ProfileData } from "@/lib/types";
+import { STORAGE_KEYS, setStorageItem } from "@/lib/storage";
+import {
+  DASHBOARD_PAGE_STYLES,
+  LoadingSpinner,
+  PageHeader,
+  generateHeadlineSuggestions,
+  generateAboutSuggestions,
+  useProfileData,
+} from "../shared";
 
 type RefactorSection = "headline" | "about" | "experience" | null;
 
-// Mock suggestions (will be replaced with AI later)
-function generateHeadlineSuggestions(current: string): string[] {
-  if (!current) return [
-    "Add a clear headline that describes what you do",
-    "Include your role, expertise, and who you help"
-  ];
-  
-  return [
-    `${current.split('|')[0]?.trim() || current} | Helping [audience] achieve [outcome]`,
-    `[Your Role] → [Key Expertise] → [Value Proposition]`,
-    `${current.length < 50 ? current + ' | Open to opportunities' : current.substring(0, 80) + '...'}`
-  ];
-}
-
-function generateAboutSuggestions(current: string): { suggestion: string; rationale: string }[] {
-  if (!current || current.length < 50) {
-    return [{
-      suggestion: "Start with a hook that captures attention in the first line.\n\nThen share:\n• What you do\n• Who you help\n• What makes your approach unique\n• A call to action",
-      rationale: "Your About section is your chance to tell your story. Lead with value, not titles."
-    }];
-  }
-  
-  return [{
-    suggestion: current.split('.')[0] + ".\n\n" + "Here's what I focus on:\n• [Key area 1]\n• [Key area 2]\n• [Key area 3]\n\n" + "Let's connect if you're working on [relevant topic].",
-    rationale: "Breaking content into scannable sections increases readability by 47%."
-  }];
-}
-
 export default function RefactorPage() {
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const { isHydrated, profileData, setProfileData } = useProfileData();
   const [activeSection, setActiveSection] = useState<RefactorSection>(null);
   const [optimizationGoal, setOptimizationGoal] = useState<string>("");
-  
+
   // Editable states
   const [editedHeadline, setEditedHeadline] = useState("");
   const [editedAbout, setEditedAbout] = useState("");
 
+  // Initialize editable values when profile data loads
   useEffect(() => {
-    const savedProfile = safeJsonParse<ProfileData | null>(
-      localStorage.getItem(STORAGE_KEYS.profile),
-      null
-    );
-    
-    if (savedProfile) {
-      setProfileData(savedProfile);
-      setEditedHeadline(savedProfile.headline || "");
-      setEditedAbout(savedProfile.summary || "");
+    if (profileData) {
+      setEditedHeadline(profileData.headline || "");
+      setEditedAbout(profileData.summary || "");
     }
-
-    setIsHydrated(true);
-  }, []);
+  }, [profileData]);
 
   const handleSaveSection = (section: RefactorSection) => {
     if (!profileData) return;
-    
+
     const updatedProfile: ProfileData = {
       ...profileData,
       headline: section === "headline" ? editedHeadline : profileData.headline,
       summary: section === "about" ? editedAbout : profileData.summary,
     };
 
-    localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(updatedProfile));
+    setStorageItem(STORAGE_KEYS.profile, updatedProfile);
     setProfileData(updatedProfile);
     setActiveSection(null);
   };
@@ -112,11 +70,7 @@ export default function RefactorPage() {
   };
 
   if (!isHydrated) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   const headlineSuggestions = generateHeadlineSuggestions(profileData?.headline || "");
@@ -124,30 +78,14 @@ export default function RefactorPage() {
 
   return (
     <div className="space-y-6">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
-
-        .font-modern {
-          font-family: 'Sora', sans-serif;
-        }
-
-        @keyframes fadeInUp {
-          0% { opacity: 0; transform: translateY(16px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in { animation: fadeInUp 0.4s ease-out forwards; }
-      `}</style>
+      <style>{DASHBOARD_PAGE_STYLES}</style>
 
       {/* Header */}
-      <div className="fade-in">
-        <h1 className="text-2xl font-semibold text-gray-900 font-modern">
-          Profile Refactor
-        </h1>
-        <p className="text-gray-500 font-modern mt-1">
-          Improve your profile section by section. We suggest, you decide.
-        </p>
-      </div>
+      <PageHeader
+        title="Profile Refactor"
+        description="Improve your profile section by section. We suggest, you decide."
+        className="fade-in"
+      />
 
       {/* Optimization Goal */}
       <Card className="fade-in border-0 shadow-sm bg-gradient-to-r from-purple-50 to-blue-50">

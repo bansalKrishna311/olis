@@ -1,254 +1,117 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ProfileData } from "@/lib/types";
+import {
+  OnboardingBackground,
+  PROFILE_SETUP_STYLES,
+  ProgressIndicator,
+  TrustFooter,
+  CheckIcon,
+  UploadIcon,
+} from "./shared";
 
-export interface ProfileData {
-  // Core identity (read-only from PDF)
-  name: string;
-  fullName?: string;
-  linkedinUrl: string;
-  pdfFile: File | null;
-  pdfFileName: string;
-  
-  // Profile sections (editable)
-  headline: string;
-  summary?: string;
-  
-  // Location & Industry
-  location?: string;
-  industry?: string;
-  
-  // Current position
-  currentPosition?: string;
-  currentCompany?: string;
-  
-  // Experience (array of positions)
-  experience?: {
-    title: string;
-    company: string;
-    location?: string;
-    startDate?: string;
-    endDate?: string;
-    current?: boolean;
-    description?: string;
-  }[];
-  
-  // Education
-  education?: {
-    school: string;
-    degree?: string;
-    field?: string;
-    startYear?: string;
-    endYear?: string;
-    description?: string;
-  }[];
-  
-  // Skills
-  skills?: string[];
-  
-  // Additional sections
-  languages?: { language: string; proficiency?: string }[];
-  certifications?: { name: string; issuer?: string; date?: string }[];
-  volunteerExperience?: { role: string; organization: string; description?: string }[];
-  publications?: { title: string; publisher?: string; date?: string }[];
-  projects?: { name: string; description?: string }[];
-  honorsAwards?: { title: string; issuer?: string; date?: string }[];
-  
-  // Contact info
-  email?: string;
-  phone?: string;
-  website?: string;
-}
+// Re-export ProfileData for consumers who import from this file
+export type { ProfileData } from "@/lib/types";
 
 interface ProfileSetupProps {
   onComplete?: (data: ProfileData) => void;
   initialData?: ProfileData | null;
 }
 
+const DEFAULT_PROFILE_DATA: ProfileData = {
+  name: "",
+  headline: "",
+  linkedinUrl: "",
+  pdfFile: null,
+  pdfFileName: "",
+};
+
 export default function ProfileSetup({ onComplete, initialData }: ProfileSetupProps) {
-  const [formData, setFormData] = useState<ProfileData>({
-    name: initialData?.name || "",
-    headline: initialData?.headline || "",
-    linkedinUrl: initialData?.linkedinUrl || "",
-    pdfFile: initialData?.pdfFile || null,
-    pdfFileName: initialData?.pdfFileName || "",
-  });
+  const [formData, setFormData] = useState<ProfileData>(() => ({
+    ...DEFAULT_PROFILE_DATA,
+    ...initialData,
+  }));
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onComplete?.(formData);
-  };
+  const isFormValid = useMemo(
+    () =>
+      formData.name.trim() !== "" &&
+      formData.headline.trim() !== "" &&
+      formData.pdfFile !== null,
+    [formData.name, formData.headline, formData.pdfFile]
+  );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (isFormValid) {
+        onComplete?.(formData);
+      }
+    },
+    [formData, isFormValid, onComplete]
+  );
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type === "application/pdf") {
+    if (file?.type === "application/pdf") {
       setFormData((prev) => ({ ...prev, pdfFile: file, pdfFileName: file.name }));
     }
-  };
+  }, []);
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
-  };
+  }, []);
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-  };
+  }, []);
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type === "application/pdf") {
+    if (file?.type === "application/pdf") {
       setFormData((prev) => ({ ...prev, pdfFile: file, pdfFileName: file.name }));
     }
-  };
+  }, []);
 
-  const handleRemovePdf = () => {
+  const handleRemovePdf = useCallback(() => {
     setFormData((prev) => ({ ...prev, pdfFile: null, pdfFileName: "" }));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, []);
 
-  const isFormValid = 
-    formData.name.trim() !== "" && 
-    formData.headline.trim() !== "" && 
-    formData.pdfFile !== null;
+  const handleUploadClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center overflow-hidden relative">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
+      <style>{PROFILE_SETUP_STYLES}</style>
 
-        .setup-bg {
-          background: linear-gradient(135deg, #fafafa 0%, #f0f4ff 50%, #faf5ff 100%);
-        }
+      <OnboardingBackground shapeCount={3} />
 
-        .font-modern {
-          font-family: 'Sora', sans-serif;
-        }
-
-        .abstract-shape {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.5;
-          animation: float 8s ease-in-out infinite;
-        }
-
-        .shape-1 {
-          width: 350px;
-          height: 350px;
-          background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
-          top: -80px;
-          right: -80px;
-          animation-delay: 0s;
-        }
-
-        .shape-2 {
-          width: 280px;
-          height: 280px;
-          background: linear-gradient(135deg, #fecaca 0%, #fcd6bb 100%);
-          bottom: -40px;
-          left: -40px;
-          animation-delay: -2s;
-        }
-
-        .shape-3 {
-          width: 180px;
-          height: 180px;
-          background: linear-gradient(135deg, #bfdbfe 0%, #ddd6fe 100%);
-          top: 50%;
-          left: 5%;
-          animation-delay: -4s;
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-20px) scale(1.03); }
-        }
-
-        @keyframes fadeInUp {
-          0% { opacity: 0; transform: translateY(24px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in-1 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards; opacity: 0; }
-        .fade-in-2 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards; opacity: 0; }
-        .fade-in-3 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards; opacity: 0; }
-        .fade-in-4 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards; opacity: 0; }
-        .fade-in-5 { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards; opacity: 0; }
-
-        .grain-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          pointer-events: none;
-          opacity: 0.03;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
-
-        .upload-zone {
-          border: 2px dashed #d1d5db;
-          transition: all 0.2s ease;
-        }
-
-        .upload-zone:hover {
-          border-color: #a5b4fc;
-          background: rgba(165, 180, 252, 0.05);
-        }
-
-        .upload-zone.dragging {
-          border-color: #818cf8;
-          background: rgba(129, 140, 248, 0.1);
-        }
-
-        .upload-zone.has-file {
-          border-color: #22c55e;
-          border-style: solid;
-          background: rgba(34, 197, 94, 0.05);
-        }
-      `}</style>
-
-      {/* Gradient Background */}
-      <div className="absolute inset-0 setup-bg"></div>
-
-      {/* Abstract floating shapes */}
-      <div className="abstract-shape shape-1"></div>
-      <div className="abstract-shape shape-2"></div>
-      <div className="abstract-shape shape-3"></div>
-
-      {/* Grain texture */}
-      <div className="grain-overlay"></div>
-
-      {/* Main Content */}
       <div className="z-10 w-full max-w-3xl px-6 py-8">
-        {/* Progress Indicator */}
-        <div className="fade-in-1 text-center mb-6">
-          <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground font-modern">
-            Step 1 of 3
-          </span>
-        </div>
+        <ProgressIndicator currentStep={1} totalSteps={3} className="fade-in-1 mb-6" />
 
         <Card className="fade-in-2 border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
             <CardDescription className="text-xs uppercase tracking-widest font-modern">
-              Let's get started
+              Let&apos;s get started
             </CardDescription>
             <CardTitle className="text-2xl font-medium tracking-tight font-modern">
               Import your LinkedIn profile
@@ -257,15 +120,16 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Two column layout */}
               <div className="grid md:grid-cols-2 gap-5">
                 {/* Left Column - PDF Upload */}
                 <div className="fade-in-3 space-y-3">
                   <Label className="font-modern text-sm flex items-center gap-2">
                     LinkedIn Profile PDF
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Required</span>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      Required
+                    </span>
                   </Label>
-                  
+
                   <div
                     className={`upload-zone rounded-lg p-6 text-center cursor-pointer h-36 flex items-center justify-center ${
                       isDragging ? "dragging" : ""
@@ -273,7 +137,7 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={handleUploadClick}
                   >
                     <input
                       ref={fileInputRef}
@@ -282,18 +146,21 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                       onChange={handleFileChange}
                       className="hidden"
                     />
-                    
+
                     {formData.pdfFile ? (
                       <div className="space-y-1">
                         <div className="w-10 h-10 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
+                          <CheckIcon size={20} stroke="#22c55e" />
                         </div>
-                        <p className="text-sm font-medium text-gray-700 font-modern">{formData.pdfFileName}</p>
+                        <p className="text-sm font-medium text-gray-700 font-modern">
+                          {formData.pdfFileName}
+                        </p>
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); handleRemovePdf(); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemovePdf();
+                          }}
                           className="text-xs text-red-500 hover:text-red-600 font-modern"
                         >
                           Remove
@@ -302,11 +169,7 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                     ) : (
                       <div className="space-y-2">
                         <div className="w-10 h-10 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                          </svg>
+                          <UploadIcon size={20} stroke="#6b7280" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-700 font-modern">
@@ -327,22 +190,22 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                     </p>
                     <ul className="text-xs text-blue-700 font-modern space-y-1">
                       <li className="flex items-start gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span><strong>Accuracy:</strong> Real experience, skills & education</span>
+                        <CheckIcon size={12} className="mt-0.5 flex-shrink-0" />
+                        <span>
+                          <strong>Accuracy:</strong> Real experience, skills & education
+                        </span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span><strong>No scraping:</strong> You provide data with consent</span>
+                        <CheckIcon size={12} className="mt-0.5 flex-shrink-0" />
+                        <span>
+                          <strong>No scraping:</strong> You provide data with consent
+                        </span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span><strong>Privacy first:</strong> Nothing posted on your behalf</span>
+                        <CheckIcon size={12} className="mt-0.5 flex-shrink-0" />
+                        <span>
+                          <strong>Privacy first:</strong> Nothing posted on your behalf
+                        </span>
                       </li>
                     </ul>
                   </div>
@@ -354,8 +217,8 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                     </summary>
                     <div className="mt-2 pl-4 border-l-2 border-gray-200 space-y-1">
                       <p>1. Go to your LinkedIn profile</p>
-                      <p>2. Click "More" button below your photo</p>
-                      <p>3. Select "Save to PDF"</p>
+                      <p>2. Click &quot;More&quot; button below your photo</p>
+                      <p>3. Select &quot;Save to PDF&quot;</p>
                       <p>4. Upload the file here</p>
                     </div>
                   </details>
@@ -364,12 +227,13 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                 {/* Right Column - Form Fields */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 mb-1">
-                    <div className="flex-1 h-px bg-gray-200 md:hidden"></div>
-                    <span className="text-xs text-muted-foreground font-modern">Confirm your identity</span>
-                    <div className="flex-1 h-px bg-gray-200 md:hidden"></div>
+                    <div className="flex-1 h-px bg-gray-200 md:hidden" />
+                    <span className="text-xs text-muted-foreground font-modern">
+                      Confirm your identity
+                    </span>
+                    <div className="flex-1 h-px bg-gray-200 md:hidden" />
                   </div>
 
-                  {/* Name Field */}
                   <div className="fade-in-4 space-y-1">
                     <Label htmlFor="name" className="font-modern text-sm">
                       Full name
@@ -385,7 +249,6 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                     />
                   </div>
 
-                  {/* Headline Field */}
                   <div className="fade-in-4 space-y-1">
                     <Label htmlFor="headline" className="font-modern text-sm">
                       Current headline or role
@@ -401,7 +264,6 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                     />
                   </div>
 
-                  {/* LinkedIn URL Field */}
                   <div className="fade-in-4 space-y-1">
                     <Label htmlFor="linkedinUrl" className="font-modern text-sm">
                       LinkedIn profile URL
@@ -418,19 +280,19 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
                     />
                   </div>
 
-                  {/* What happens next */}
                   <div className="fade-in-5 bg-gray-50 rounded-lg p-2.5 space-y-1">
-                    <p className="text-xs font-medium text-gray-700 font-modern">What happens next?</p>
+                    <p className="text-xs font-medium text-gray-700 font-modern">
+                      What happens next?
+                    </p>
                     <ul className="text-xs text-gray-600 font-modern space-y-0.5">
-                      <li>• We'll extract your experience, skills, and profile structure</li>
-                      <li>• You'll review everything before we proceed</li>
+                      <li>• We&apos;ll extract your experience, skills, and profile structure</li>
+                      <li>• You&apos;ll review everything before we proceed</li>
                       <li>• Nothing shared without your approval</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
-              {/* Submit Button - Full Width */}
               <div className="fade-in-5">
                 <Button
                   type="submit"
@@ -445,14 +307,11 @@ export default function ProfileSetup({ onComplete, initialData }: ProfileSetupPr
           </CardContent>
         </Card>
 
-        {/* Trust footer */}
-        <div className="fade-in-5 flex items-center justify-center gap-2 text-xs text-muted-foreground mt-4 font-modern">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <span>Your data stays on your device until you choose to proceed</span>
-        </div>
+        <TrustFooter
+          message="Your data stays on your device until you choose to proceed"
+          variant="lock"
+          className="fade-in-5 mt-4"
+        />
       </div>
     </div>
   );
